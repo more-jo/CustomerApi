@@ -7,13 +7,6 @@ namespace CustomerApi.Tests;
 
 public class GetCustomersTests
 {
-    private async Task<HttpClient> CreateClient()
-    {
-        // this cannot be used for database approach : factory gets discarded. Database is created anew (empty/seedless) when called.
-        var factory = new WebApplicationFactory<Program>();
-        return factory.CreateClient();
-    }
-
     [Test]
     public async Task SeedDataBase_DatabaseContainsSeedData()
     {
@@ -59,7 +52,8 @@ public class GetCustomersTests
     public async Task HappyPath_GetCustomerId_ReturnsCorrectCustomer()
     {
         // Arrange
-        var client = await CreateClient();
+        var factory = new WebApplicationFactory<Program>();
+        var client = factory.CreateClient();
 
         // Act
         var response = await client.GetAsync("/customers/1");
@@ -78,7 +72,8 @@ public class GetCustomersTests
     public async Task GetCustomerById_NonExistentId_Returns404()
     {
         // Arrange
-        var client = await CreateClient();
+        var factory = new WebApplicationFactory<Program>();
+        var client = factory.CreateClient();
 
         // Act
         var response = await client.GetAsync("/customers/999");
@@ -91,7 +86,8 @@ public class GetCustomersTests
     public async Task GetCustomerById_NonExistentString_Returns404()
     {
         // Arrange
-        var client = await CreateClient();
+        var factory = new WebApplicationFactory<Program>();
+        var client = factory.CreateClient();
 
         // Act
         var response = await client.GetAsync("/customers/abc");
@@ -104,7 +100,8 @@ public class GetCustomersTests
     public async Task GetCustomerEmpty_Returns400()
     {
         // Arrange
-        var client = await CreateClient();
+        var factory = new WebApplicationFactory<Program>();
+        var client = factory.CreateClient();
 
         // Act
         var response = await client.GetAsync(string.Empty);

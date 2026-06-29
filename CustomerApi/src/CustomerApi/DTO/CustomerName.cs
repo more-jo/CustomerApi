@@ -1,0 +1,1 @@
+public record CustomerName(string Name);

@@ -31,6 +31,8 @@ public partial class Program
             app.MapOpenApi();
         }
 
+        app.UseMiddleware<ExceptionHandlingMiddleware>();
+
         app.UseHttpsRedirection();
 
         app.MapGet(CUSTOMER_ROUTE, (ICustomerRepository repo) =>
@@ -47,16 +49,17 @@ public partial class Program
             return customer is not null ? Results.Ok(customer) : Results.NotFound();
         });
 
+        app.MapGet("/throw", () =>
+        {
+            throw new InvalidOperationException();
+        });
+
         app.MapPost(CUSTOMER_ROUTE, (CreateCustomerRequest newCustomer, ICustomerRepository repo) =>
         {
-            if (newCustomer is null)
+            var validationResult = CustomerRequestValidator.ValidateCustomerName(newCustomer);
+            if (validationResult is not null)
             {
-                return Results.BadRequest();
-            }
-
-            if (string.IsNullOrWhiteSpace(newCustomer.Name))
-            {
-                return CreateInvalidRequestBodyReturn422();
+                return validationResult;
             }
 
             int newId = repo.GetMaxId() + 1;
@@ -67,19 +70,10 @@ public partial class Program
 
         app.MapPut(CUSTOMER_ROUTE + "/{id:int}", (int id, UpdateCustomerRequest newCustomer, ICustomerRepository repo) =>
         {
-            if (newCustomer is null)
+            var validationResult = CustomerRequestValidator.ValidateCustomerName(newCustomer);
+            if (validationResult is not null)
             {
-                return Results.BadRequest();
-            }
-
-            if (string.IsNullOrWhiteSpace(newCustomer.Name))
-            {
-                return CreateInvalidRequestBodyReturn422();
-            }
-
-            if (string.IsNullOrWhiteSpace(newCustomer.Name))
-            {
-                return Results.UnprocessableEntity();
+                return validationResult;
             }
 
             if (repo.Update(id, newCustomer.Name))
@@ -101,19 +95,6 @@ public partial class Program
         });
 
         app.Run();
-    }
-
-    private static IResult CreateInvalidRequestBodyReturn422()
-    {
-        return Results.Problem(
-            title: "Invalid request body",
-            detail: "The request body is invalid or missing.",
-            statusCode: 422,
-            extensions: new Dictionary<string, object?>
-            {
-                ["errorCode"] = "NAME_REQUIRED"
-            }
-        );
     }
 
     private static void SeedDataBase(Microsoft.AspNetCore.Builder.WebApplication app)

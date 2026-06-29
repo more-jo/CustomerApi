@@ -6,19 +6,6 @@ namespace CustomerApi.Tests;
 
 public class PutCustomerTests
 {
-    private WebApplicationFactory<Program>? _factory;
-
-    /// <summary>
-    /// This cannot be used for database approach : 
-    /// factory gets discarded. 
-    /// Database is created anew (empty/seedless) when called.
-    /// </summary>
-    private async Task<HttpClient> CreateClient()
-    {
-        _factory = new WebApplicationFactory<Program>();
-        return _factory.CreateClient();
-    }
-
     [Test]
     public async Task PutCustomer_UpdateUserName_Returns204()
     {
@@ -167,11 +154,5 @@ public class PutCustomerTests
 
         // Assert
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.UnprocessableEntity));
-    }
-
-    [TearDown]
-    public void TearDown()
-    {
-        _factory?.Dispose();
     }
 }

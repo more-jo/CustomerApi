@@ -8,17 +8,6 @@ public class PostCustomerTests
 {
     private WebApplicationFactory<Program>? _factory;
 
-    /// <summary>
-    /// This cannot be used for database approach : 
-    /// factory gets discarded. 
-    /// Database is created anew (empty/seedless) when called.
-    /// </summary>
-    private async Task<HttpClient> CreateClient()
-    {
-        _factory = new WebApplicationFactory<Program>();
-        return _factory.CreateClient();
-    }
-
     [Test]
     public async Task PostCustomer_Returns201WithLocationHeader()
     {
