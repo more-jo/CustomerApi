@@ -75,8 +75,8 @@ public class ExceptionTests
   public void ValidateCustomerName_Empty_ReturnsBadRequest()
   {
     // Arrange    
-    UpdateCustomerRequest update = null;
-    CreateCustomerRequest request = null;
+    UpdateCustomerRequest? update = null;
+    CreateCustomerRequest? request = null;
 
     // Act
     var responseUpdate = CustomerRequestValidator.ValidateCustomerName(update);
@@ -99,10 +99,12 @@ public class ExceptionTests
     // Assert
     Assert.That(responseUpdate, Is.TypeOf(typeof(ProblemHttpResult)));
     var detailsUpdate = responseUpdate as ProblemHttpResult;
+    Assert.That(detailsUpdate, Is.Not.Null);
     Assert.That(detailsUpdate.StatusCode, Is.EqualTo(422));
     Assert.That(detailsUpdate.ProblemDetails.Status, Is.EqualTo(422));
     Assert.That(detailsUpdate.ProblemDetails.Title, Is.EqualTo("Invalid request body"));
     Assert.That(detailsUpdate.ProblemDetails.Detail, Is.EqualTo("The request body is invalid or missing."));
+    Assert.That(detailsUpdate.ProblemDetails.Extensions["errorCode"], Is.Not.Null);
     Assert.That(detailsUpdate.ProblemDetails.Extensions["errorCode"].ToString(), Is.EqualTo("NAME_REQUIRED"));
   }
 
@@ -118,10 +120,12 @@ public class ExceptionTests
     // Assert
     Assert.That(responseRequest, Is.TypeOf(typeof(ProblemHttpResult)));
     var detailsUpdate = responseRequest as ProblemHttpResult;
+    Assert.That(detailsUpdate, Is.Not.Null);
     Assert.That(detailsUpdate.StatusCode, Is.EqualTo(422));
     Assert.That(detailsUpdate.ProblemDetails.Status, Is.EqualTo(422));
     Assert.That(detailsUpdate.ProblemDetails.Title, Is.EqualTo("Invalid request body"));
     Assert.That(detailsUpdate.ProblemDetails.Detail, Is.EqualTo("The request body is invalid or missing."));
+    Assert.That(detailsUpdate.ProblemDetails.Extensions["errorCode"], Is.Not.Null);
     Assert.That(detailsUpdate.ProblemDetails.Extensions["errorCode"].ToString(), Is.EqualTo("NAME_REQUIRED"));
   }
 }
