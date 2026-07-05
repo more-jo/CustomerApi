@@ -67,6 +67,7 @@ public partial class Program
             int newId = repo.GetMaxId() + 1;
             var customer = new Customer(newId, newCustomer.Name);
             repo.Add(customer);
+
             return Results.Created($"{CUSTOMER_ROUTE}/{customer.Id}", customer);
         });
 
@@ -96,12 +97,27 @@ public partial class Program
             return Results.NotFound();
         });
 
-
         app.MapGet(ORDERS_ROUTE, (int customerId, IOrderRepository repo) =>
         {
             List<Order> orders = repo.GetOrderByCustomerId(customerId);
 
             return orders;
+        });
+
+        app.MapPost(ORDERS_ROUTE, (CreateOrderRequest request, IOrderRepository orderRepo, ICustomerRepository customerRepo) =>
+        {
+            var customer = customerRepo.GetCustomerById(request.CustomerId);
+            if (customer is null)
+            {
+                return Results.NotFound();
+            }
+
+            var maxId = orderRepo.GetMaxId();
+            var orderId = maxId + 1;
+            var newOrder = new Order(orderId, request.CustomerId, request.Amount);
+            orderRepo.Add(newOrder);
+
+            return Results.Created($"{ORDERS_ROUTE}/{newOrder.Id}", newOrder);
         });
 
         app.Run();

@@ -6,4 +6,8 @@ namespace CustomerApi;
 interface IOrderRepository
 {
   List<Order> GetOrderByCustomerId(int customerId);
+
+  int GetMaxId();
+
+  void Add(Order order);
 }

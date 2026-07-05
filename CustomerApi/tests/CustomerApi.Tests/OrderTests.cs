@@ -2,6 +2,9 @@ using System.Net;
 using Microsoft.AspNetCore.Mvc.Testing;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
+using System.Text.Unicode;
+using System.Net.Http.Json;
+using Microsoft.AspNetCore.Http;
 
 namespace CustomerApi.Tests;
 
@@ -32,5 +35,33 @@ public class OrderTests
     var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
     var orders = JsonSerializer.Deserialize<List<Order>>(content, options);
     Assert.That(orders, Is.Empty);
+  }
+
+  [Test]
+  public async Task PostOrder_CustomerExists_Returns201WithLocationHeader()
+  {
+    // Arrange
+    await using var factory = new WebApplicationFactory<Program>();
+    var client = factory.CreateClient();
+
+    var customer = new { Name = "Alice" };
+    var responseCustomerPost = await client.PostAsJsonAsync("/customers", customer);
+
+    var order = new { CustomerId = 1, Amount = 1 };
+    // Act
+    var responseOrderPost = await client.PostAsJsonAsync("/orders", order);
+
+    // Assert
+    Assert.That(responseCustomerPost.StatusCode, Is.EqualTo(HttpStatusCode.Created));
+
+    Assert.That(responseOrderPost.StatusCode, Is.EqualTo(HttpStatusCode.Created));
+    var content = await responseOrderPost.Content.ReadAsStringAsync();
+    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+    var responseOrder = JsonSerializer.Deserialize<Order>(content, options);
+    Assert.That(responseOrder, Is.Not.Null);
+    Assert.That(responseOrderPost.Headers.Location?.ToString(), Is.EqualTo($"/orders/{responseOrder.Id}"));
+    Assert.That(responseOrder.CustomerId, Is.EqualTo(order.CustomerId));
+    Assert.That(responseOrder.Amount, Is.EqualTo(order.Amount));
+    Assert.That(responseOrder.Id, Is.EqualTo(1));
   }
 }

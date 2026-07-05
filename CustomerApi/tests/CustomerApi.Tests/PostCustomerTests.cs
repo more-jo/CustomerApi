@@ -127,8 +127,10 @@ public class PostCustomerTests
         Assert.That(details.Title, Is.EqualTo("Invalid request body"));
         Assert.That(details.Status, Is.EqualTo(422));
         Assert.That(details.Detail, Is.EqualTo("The request body is invalid or missing."));
-        var errorCode = ((JsonElement)details.Extensions["errorCode"]).GetString();
-        Assert.That(errorCode, Is.EqualTo("NAME_REQUIRED"));
+        var errorCode = details.Extensions["errorCode"];
+        Assert.That(errorCode, Is.Not.Null);
+        var errorCodeString = ((JsonElement)errorCode).GetString();
+        Assert.That(errorCodeString, Is.EqualTo("NAME_REQUIRED"));
     }
 
     [TearDown]
