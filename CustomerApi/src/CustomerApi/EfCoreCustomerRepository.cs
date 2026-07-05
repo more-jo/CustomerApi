@@ -1,7 +1,6 @@
 namespace CustomerApi;
 
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 
 /// <summary>
 /// In-memory repository for local development and testing.
@@ -62,9 +61,8 @@ public class EfCoreCustomerRepository : ICustomerRepository
         //     .SetProperty(c => c.Name, newCustomerName));
 
         var updatedCustomer = customer with { Name = newCustomerName };
-        // _dbContext.Customers.Entry(updatedCustomer);
+        // _dbContext.Customers.Entry(updatedCustomer); // does not work. Design decision to stick to record.
         // _dbContext.Customers.Update(updatedCustomer);
-        // var t = _dbContext.Customers.ToList();
 
         _dbContext.Customers.Entry(customer).State = EntityState.Detached;
         // _dbContext.Customers.Entry(updatedCustomer).State = EntityState.Modified;

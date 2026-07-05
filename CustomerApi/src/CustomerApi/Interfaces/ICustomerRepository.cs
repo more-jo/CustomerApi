@@ -2,7 +2,6 @@ namespace CustomerApi;
 
 /// <summary>
 /// Repository abstraction for customer data access.
-/// Start minimal: add methods as you refactor each endpoint.
 /// </summary>
 public interface ICustomerRepository
 {
