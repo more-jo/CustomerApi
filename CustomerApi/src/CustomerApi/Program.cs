@@ -18,8 +18,10 @@ public partial class Program
 
         ConfigureDatabase(builder.Services);
         builder.Services.AddScoped<ICustomerRepository, EfCoreCustomerRepository>();
+        builder.Services.AddScoped<IOrderRepository, EfCoreOrderRepository>();
 
         const string CUSTOMER_ROUTE = "/customers";
+        const string ORDERS_ROUTE = "/orders";
 
         var app = builder.Build();
 
@@ -94,6 +96,14 @@ public partial class Program
             return Results.NotFound();
         });
 
+
+        app.MapGet(ORDERS_ROUTE, (int customerId, IOrderRepository repo) =>
+        {
+            List<Order> orders = repo.GetOrderByCustomerId(customerId);
+
+            return orders;
+        });
+
         app.Run();
     }
 
@@ -118,11 +128,11 @@ public partial class Program
 
     private static void ConfigureDatabase(IServiceCollection services)
     {
-        var dbName = $"CustomerDb-{Guid.NewGuid()}";
+        var dbCustomer = $"CustomerDb-{Guid.NewGuid()}";
 
         // this only shows how to create the database - it does not create the database itself.
         services.AddDbContext<CustomerDbContext>(options =>
-            options.UseInMemoryDatabase(dbName)
+            options.UseInMemoryDatabase(dbCustomer)
         );
     }
 }
