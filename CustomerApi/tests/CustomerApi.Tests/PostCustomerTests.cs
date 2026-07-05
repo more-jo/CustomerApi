@@ -12,7 +12,7 @@ public class PostCustomerTests
     public async Task PostCustomer_Returns201WithLocationHeader()
     {
         // Arrange
-        var factory = new WebApplicationFactory<Program>();
+        await using var factory = new WebApplicationFactory<Program>();
         var client = factory.CreateClient();
         var newCustomer = new { Name = "Charlie" };
         string newCustomerJson = JsonSerializer.Serialize(newCustomer);
@@ -36,7 +36,7 @@ public class PostCustomerTests
     public async Task PostCustomer_ThenGetCustomers_ReturnsNewCustomerInList()
     {
         // Arrange
-        var factory = new WebApplicationFactory<Program>();
+        await using var factory = new WebApplicationFactory<Program>();
         var client = factory.CreateClient();
         string newCustomerJson = JsonSerializer.Serialize(new { Name = "Charlie" });
         var httpContent = new StringContent(newCustomerJson, System.Text.Encoding.UTF8, "application/json");
@@ -61,7 +61,7 @@ public class PostCustomerTests
     public async Task PostCustomer_WhenNameIsEmpty_Returns422()
     {
         // Arrange
-        var factory = new WebApplicationFactory<Program>();
+        await using var factory = new WebApplicationFactory<Program>();
         var client = factory.CreateClient();
 
         string newCustomerJson = JsonSerializer.Serialize(new { Name = string.Empty });
@@ -78,7 +78,7 @@ public class PostCustomerTests
     public async Task PostCustomer_WhenIsEmpty_Returns422()
     {
         // Arrange
-        var factory = new WebApplicationFactory<Program>();
+        await using var factory = new WebApplicationFactory<Program>();
         var client = factory.CreateClient();
 
         var httpContent = new StringContent("{ }", System.Text.Encoding.UTF8, "application/json");
@@ -94,7 +94,7 @@ public class PostCustomerTests
     public async Task PostCustomer_WhenMalformedJson_Returns400()
     {
         // Arrange
-        var factory = new WebApplicationFactory<Program>();
+        await using var factory = new WebApplicationFactory<Program>();
         var client = factory.CreateClient();
 
         var httpContent = new StringContent("{ Name: }", System.Text.Encoding.UTF8, "application/json");
@@ -110,7 +110,7 @@ public class PostCustomerTests
     public async Task PostCustomer_WhenNameIsMissing_Returns422WithProblemDetails()
     {
         // Arrange
-        var factory = new WebApplicationFactory<Program>();
+        await using var factory = new WebApplicationFactory<Program>();
         var client = factory.CreateClient();
 
         var httpContent = new StringContent("{ }", System.Text.Encoding.UTF8, "application/json");

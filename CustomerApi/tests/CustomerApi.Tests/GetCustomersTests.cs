@@ -11,7 +11,7 @@ public class GetCustomersTests
     public async Task SeedDataBase_DatabaseContainsSeedData()
     {
         // Arrange
-        var factory = new WebApplicationFactory<Program>();
+        await using var factory = new WebApplicationFactory<Program>();
         factory.CreateClient();
 
         // Act
@@ -27,7 +27,7 @@ public class GetCustomersTests
     public async Task GetCustomers_ReturnsCorrectArray()
     {
         // Arrange
-        var factory = new WebApplicationFactory<Program>();
+        await using var factory = new WebApplicationFactory<Program>();
         var client = factory.CreateClient();
 
         // Act
@@ -37,7 +37,7 @@ public class GetCustomersTests
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
         var content = await response.Content.ReadAsStringAsync();
-        // asp.net deserializes usually with camelCase, but Customer is PascalCase
+        // asp.net deserializes usually with camelCase, but Customer is PascalCase. Therefore options:
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         var customers = JsonSerializer.Deserialize<List<Customer>>(content, options);
         Assert.That(customers, Is.Not.Null);
@@ -52,7 +52,7 @@ public class GetCustomersTests
     public async Task HappyPath_GetCustomerId_ReturnsCorrectCustomer()
     {
         // Arrange
-        var factory = new WebApplicationFactory<Program>();
+        await using var factory = new WebApplicationFactory<Program>();
         var client = factory.CreateClient();
 
         // Act
@@ -72,7 +72,7 @@ public class GetCustomersTests
     public async Task GetCustomerById_NonExistentId_Returns404()
     {
         // Arrange
-        var factory = new WebApplicationFactory<Program>();
+        await using var factory = new WebApplicationFactory<Program>();
         var client = factory.CreateClient();
 
         // Act
@@ -86,7 +86,7 @@ public class GetCustomersTests
     public async Task GetCustomerById_NonExistentString_Returns404()
     {
         // Arrange
-        var factory = new WebApplicationFactory<Program>();
+        await using var factory = new WebApplicationFactory<Program>();
         var client = factory.CreateClient();
 
         // Act
@@ -100,7 +100,7 @@ public class GetCustomersTests
     public async Task GetCustomerEmpty_Returns400()
     {
         // Arrange
-        var factory = new WebApplicationFactory<Program>();
+        await using var factory = new WebApplicationFactory<Program>();
         var client = factory.CreateClient();
 
         // Act

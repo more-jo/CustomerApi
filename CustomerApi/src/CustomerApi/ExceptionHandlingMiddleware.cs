@@ -6,6 +6,7 @@ public class ExceptionHandlingMiddleware
 {
   private readonly RequestDelegate _next;
 
+  // Loaded in the program in a dedicated middleware assignment call.
   public ExceptionHandlingMiddleware(RequestDelegate next)
   {
     _next = next;
