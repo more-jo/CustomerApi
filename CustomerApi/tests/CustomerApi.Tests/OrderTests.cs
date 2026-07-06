@@ -10,6 +10,7 @@ namespace CustomerApi.Tests;
 
 public class OrderTests
 {
+
   [Test]
   public async Task GetOrders_CustomerExistsWithNoOrders_ReturnsEmptyList()
   {
@@ -43,9 +44,10 @@ public class OrderTests
     // Arrange
     await using var factory = new WebApplicationFactory<Program>();
     var client = factory.CreateClient();
+    const int expectedCustomerIdFromSeeding = 1;
 
-    var customer = new { Name = "Alice" };
-    var responseCustomerPost = await client.PostAsJsonAsync("/customers", customer);
+    var atLeastOneCustomer = new { Name = "Alice" };
+    var responseCustomerPost = await client.PostAsJsonAsync("/customers", atLeastOneCustomer);
 
     var order = new { CustomerId = 1, Amount = 1 };
     // Act
@@ -62,6 +64,22 @@ public class OrderTests
     Assert.That(responseOrderPost.Headers.Location?.ToString(), Is.EqualTo($"/orders/{responseOrder.Id}"));
     Assert.That(responseOrder.CustomerId, Is.EqualTo(order.CustomerId));
     Assert.That(responseOrder.Amount, Is.EqualTo(order.Amount));
-    Assert.That(responseOrder.Id, Is.EqualTo(1));
+    Assert.That(responseOrder.Id, Is.EqualTo(expectedCustomerIdFromSeeding));
+  }
+
+  [Test]
+  public async Task PostOrder_CustomerDoesNotExist_Returns404()
+  {
+    // Arrange
+    await using var factory = new WebApplicationFactory<Program>();
+    var client = factory.CreateClient();
+    var nonExistentCustomer = int.MaxValue;
+    var errorProvokingOrder = new { customerID = nonExistentCustomer, Amount = 1 };
+
+    // Act
+    var response = await client.PostAsJsonAsync("/orders", errorProvokingOrder);
+
+    // Assert
+    Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
   }
 }
