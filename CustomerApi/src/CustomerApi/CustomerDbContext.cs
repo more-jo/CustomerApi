@@ -16,5 +16,8 @@ public class CustomerDbContext : DbContext
             .HasOne<Customer>()
             .WithMany()
             .HasForeignKey(o => o.CustomerId);
+
+        modelBuilder.Entity<Order>().HasKey(o => o.Id); // eplicit ID assignment
+        modelBuilder.Entity<Customer>().HasKey(c => c.Id);
     }
 }

@@ -29,4 +29,9 @@ public class EfCoreOrderRepository : IOrderRepository
     {
         return _dbContext.Orders.Where(order => order.CustomerId == customerId).ToList();
     }
+
+    public Order GetOrderByOrderId(int orderId)
+    {
+        return _dbContext.Orders.FirstOrDefault(order => order.Id == orderId);
+    }
 }

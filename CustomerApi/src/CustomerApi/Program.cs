@@ -104,6 +104,13 @@ public partial class Program
             return orders;
         });
 
+        app.MapGet(ORDERS_ROUTE + "/{id:int}", (int id, IOrderRepository repo) =>
+        {
+            var order = repo.GetOrderByOrderId(id);
+
+            return order is not null ? Results.Ok(order) : Results.NotFound();
+        });
+
         app.MapPost(ORDERS_ROUTE, (CreateOrderRequest request, IOrderRepository orderRepo, ICustomerRepository customerRepo) =>
         {
             var customer = customerRepo.GetCustomerById(request.CustomerId);
