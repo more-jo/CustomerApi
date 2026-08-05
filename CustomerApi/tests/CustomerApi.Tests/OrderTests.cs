@@ -1,11 +1,7 @@
 using System.Net;
 using Microsoft.AspNetCore.Mvc.Testing;
 using System.Text.Json;
-using Microsoft.Extensions.DependencyInjection;
-using System.Text.Unicode;
 using System.Net.Http.Json;
-using Microsoft.AspNetCore.Http;
-using System.Runtime.CompilerServices;
 
 namespace CustomerApi.Tests;
 
@@ -110,7 +106,7 @@ public class OrderTests
   }
 
   [Test]
-  public async Task GetOrder_OrderExists_Returns200()
+  public async Task GetOrder_OrderIdExists_Returns200()
   {
     // Arrange
     await using var factory = new WebApplicationFactory<Program>();
@@ -139,5 +135,19 @@ public class OrderTests
     Assert.That(responseOrder.Amount, Is.EqualTo(1));
     Assert.That(responseOrder.Id, Is.EqualTo(createdOrder.Id));
     Assert.That(responseOrder.CustomerId, Is.EqualTo(1));
+  }
+
+  [Test]
+  public async Task GetOrder_OrderIdAbsent_Returns404()
+  {
+    // Arrange
+    await using var factory = new WebApplicationFactory<Program>();
+    var client = factory.CreateClient();
+
+    // Act
+    var responseGetOrder = await client.GetAsync($"/orders/999");
+
+    // Assert
+    Assert.That(responseGetOrder.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
   }
 }
