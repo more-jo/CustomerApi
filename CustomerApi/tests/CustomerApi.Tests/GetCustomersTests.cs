@@ -49,7 +49,7 @@ public class GetCustomersTests
     }
 
     [Test]
-    public async Task HappyPath_GetCustomerId_ReturnsCorrectCustomer()
+    public async Task HappyPath_GetCustomerId_ReturnsCorrectCustomer200()
     {
         // Arrange
         await using var factory = new WebApplicationFactory<Program>();

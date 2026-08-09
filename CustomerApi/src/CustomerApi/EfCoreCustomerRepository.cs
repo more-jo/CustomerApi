@@ -79,7 +79,8 @@ public class EfCoreCustomerRepository : ICustomerRepository
 
         if (customer is not null)
         {
-            _dbContext.Customers.Remove(customer);
+            // _dbContext.Customers.Remove(customer);
+            customer.IsDeleted = true;
 
             _dbContext.SaveChanges();
 

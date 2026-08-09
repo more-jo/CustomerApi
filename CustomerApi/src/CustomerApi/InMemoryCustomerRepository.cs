@@ -43,7 +43,8 @@ public class InMemoryCustomerRepository : ICustomerRepository
         var index = _customers.FindIndex(0, _customers.Count, c => c.Id == id);
         if (index >= 0)
         {
-            _customers.RemoveAt(index);
+            // _customers.RemoveAt(index);
+            _customers[index].IsDeleted = true;
             return SUCCESS;
         }
 
