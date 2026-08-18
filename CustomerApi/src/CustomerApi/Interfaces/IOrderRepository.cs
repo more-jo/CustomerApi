@@ -12,4 +12,6 @@ interface IOrderRepository
   int GetMaxId();
 
   void Add(Order order);
+
+  bool Delete(int id);
 }

@@ -127,6 +127,16 @@ public partial class Program
             return Results.Created($"{ORDERS_ROUTE}/{newOrder.Id}", newOrder);
         });
 
+        app.MapDelete(ORDERS_ROUTE + "/{id:int}", (int id, IOrderRepository orderRepo) =>
+        {
+            if (orderRepo.Delete(id))
+            {
+                return Results.NoContent();
+            }
+
+            return Results.NotFound();
+        });
+
         app.Run();
     }
 

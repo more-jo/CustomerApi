@@ -4,4 +4,7 @@
 /// <param name="Id"></param>
 /// <param name="customerId"></param>
 /// <param name="amount"></param>
-public record Order(int Id, int CustomerId, int Amount);
+public record Order(int Id, int CustomerId, int Amount)
+{
+  public bool IsDeleted { get; set; }
+}

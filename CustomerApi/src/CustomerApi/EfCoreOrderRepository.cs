@@ -6,6 +6,9 @@ namespace CustomerApi;
 /// </summary>
 public class EfCoreOrderRepository : IOrderRepository
 {
+    private const bool SUCCESS = true;
+    private const bool ERROR = false;
+
     private CustomerDbContext _dbContext;
 
     public EfCoreOrderRepository(CustomerDbContext database)
@@ -18,6 +21,21 @@ public class EfCoreOrderRepository : IOrderRepository
         _dbContext.Orders.Add(newOrder);
 
         _dbContext.SaveChanges();
+    }
+
+    public bool Delete(int id)
+    {
+        var order = _dbContext.Orders.SingleOrDefault(o => o.Id == id);
+
+        if (order is not null)
+        {
+            order.IsDeleted = true;
+            _dbContext.SaveChanges();
+
+            return SUCCESS;
+        }
+
+        return ERROR;
     }
 
     public int GetMaxId()

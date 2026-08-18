@@ -29,17 +29,17 @@ public class DeleteCustomerTests
         var client = factory.CreateClient();
         var atLeastOneCustomer = new { Name = "Charlie" };
 
-        // Act
         var responsePostBefore = await client.PostAsJsonAsync("/customers/", atLeastOneCustomer);
         Assume.That(responsePostBefore.StatusCode, Is.EqualTo(HttpStatusCode.Created));
 
         var customerBeforeDeletion = await GetCustomerFromContent(responsePostBefore.Content);
         Assume.That(customerBeforeDeletion.IsDeleted, Is.False);
 
+        // Act
         var responseDelete = await client.DeleteAsync($"/customers/{customerBeforeDeletion.Id}");
-        var responseGetAfter = await client.GetAsync($"/customers/{customerBeforeDeletion.Id}");
 
         // assert
+        var responseGetAfter = await client.GetAsync($"/customers/{customerBeforeDeletion.Id}");
         var customerAfterDeletion = await GetCustomerFromContent(responseGetAfter.Content);
         Assert.That(customerAfterDeletion, Is.Not.Null);
         Assert.Multiple(() =>
