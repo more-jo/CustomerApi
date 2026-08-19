@@ -105,7 +105,7 @@ public class OrderTests
     var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
     var responseOrders = JsonSerializer.Deserialize<List<Order>>(content, options);
     Assert.That(responseOrders, Is.Not.Null);
-    Assert.That(responseOrders.Where(o => o.Amount == 1 && o.CustomerId == 1).Count, Is.EqualTo(1));
+    Assert.That(responseOrders.Where(o => o.Amount == 1 && o.CustomerId == expectedOrder.CustomerId).Count, Is.EqualTo(1));
   }
 
   [Test]
@@ -139,7 +139,7 @@ public class OrderTests
     Assert.That(responseOrder, Is.Not.Null);
     Assert.That(responseOrder.Amount, Is.EqualTo(1));
     Assert.That(responseOrder.Id, Is.EqualTo(createdOrder.Id));
-    Assert.That(responseOrder.CustomerId, Is.EqualTo(1));
+    Assert.That(responseOrder.CustomerId, Is.EqualTo(responsePostCustomerObject.Id));
   }
 
   [Test]
