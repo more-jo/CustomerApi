@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Hosting;
 
 namespace CustomerApi.Tests;
 
@@ -25,6 +26,26 @@ public class ExceptionTests
     Assert.That(details, Is.Not.Null);
     Assert.That(details.Title, Is.EqualTo("An error occurred while processing your request."));
     Assert.That(details.Status, Is.EqualTo(500));
+  }
+
+  [Test]
+  public async Task UnhandledException_ReturnsErrorWithoutRevealingDetails()
+  {
+    // Arrange 
+    var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(b => b.UseEnvironment("Development"));
+    var client = factory.CreateClient();
+
+    // Act
+    var response = await client.GetAsync("/throw");
+
+    // Assert
+    Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.InternalServerError));
+    var content = await response.Content.ReadAsStringAsync();
+    var details = JsonSerializer.Deserialize<ProblemDetails>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+    Assert.That(details, Is.Not.Null);
+    Assert.That(details.Detail, Is.EqualTo("An unexpected error occurred."));
+    Assert.That(details.Extensions.ContainsKey("traceId"), Is.True);
+    Assert.That(details.Extensions["traceId"]?.ToString(), Is.Not.Empty);
   }
 
   [Test]
