@@ -33,6 +33,7 @@ public class DeleteCustomerTests
         Assume.That(responsePostBefore.StatusCode, Is.EqualTo(HttpStatusCode.Created));
 
         var customerBeforeDeletion = await GetCustomerFromContent(responsePostBefore.Content);
+        Assume.That(customerBeforeDeletion, Is.Not.Null);
         Assume.That(customerBeforeDeletion.IsDeleted, Is.False);
 
         // Act
@@ -49,7 +50,7 @@ public class DeleteCustomerTests
         });
     }
 
-    private async Task<Customer> GetCustomerFromContent(HttpContent content)
+    private async Task<Customer?> GetCustomerFromContent(HttpContent content)
     {
         var responseString = await content.ReadAsStringAsync();
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };

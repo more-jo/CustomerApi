@@ -1,3 +1,5 @@
+namespace CustomerApi;
+
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 
@@ -49,7 +51,7 @@ public class ExceptionHandlingMiddleware
       ProblemDetails problemDetails = new ProblemDetails
       {
         Title = title,
-        // Detail = ex.Message, // Lesson learned: Never expose ex.Message — it can contain connection strings, paths or table names.
+        // Lesson learned: Never expose with Detail = ex.Message, — it can contain connection strings, paths or table names.
         Detail = details,
         Status = statusCode,
         Type = type,
@@ -65,13 +67,11 @@ public class ExceptionHandlingMiddleware
 
       if (statusCode >= StatusCodes.Status500InternalServerError)
       {
-        _logger.LogError(ex, "Unhandled exception on {Path}, traceId {TraceId}",
-            httpContext.Request.Path, httpContext.TraceIdentifier);
+        _logger.LogError(ex, $"Unhandled exception on {httpContext.Request.Path}, traceId {httpContext.TraceIdentifier}");
       }
       else
       {
-        _logger.LogWarning("Invalid request on {Path}, traceId {TraceId}",
-            httpContext.Request.Path, httpContext.TraceIdentifier);
+        _logger.LogWarning($"Invalid request on {httpContext.Request.Path}, traceId {httpContext.TraceIdentifier}");
       }
 
       await httpContext.Response.WriteAsJsonAsync(problemDetails);

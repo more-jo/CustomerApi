@@ -6,8 +6,6 @@ namespace CustomerApi.Tests;
 
 public class PostCustomerTests
 {
-    private WebApplicationFactory<Program>? _factory;
-
     [Test]
     public async Task PostCustomer_Returns201WithLocationHeader()
     {
@@ -131,11 +129,5 @@ public class PostCustomerTests
         Assert.That(errorCode, Is.Not.Null);
         var errorCodeString = ((JsonElement)errorCode).GetString();
         Assert.That(errorCodeString, Is.EqualTo("NAME_REQUIRED"));
-    }
-
-    [TearDown]
-    public void TearDown()
-    {
-        _factory?.Dispose();
     }
 }

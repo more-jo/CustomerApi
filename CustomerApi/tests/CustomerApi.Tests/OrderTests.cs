@@ -21,6 +21,7 @@ public class OrderTests
 
     var responsePost = await client.PostAsync("/customers", httpContent);
     var responsePostCustomerObject = await GetCustomerFromResponse(responsePost);
+    Assume.That(responsePostCustomerObject, Is.Not.Null);
 
     // Act
     var response = await client.GetAsync($"/orders?customerId={responsePostCustomerObject.Id}");
@@ -46,6 +47,7 @@ public class OrderTests
     var atLeastOneCustomer = new { Name = "Alice" };
     var responseCustomerPost = await client.PostAsJsonAsync("/customers", atLeastOneCustomer);
     var responseCustomerPostObject = await GetCustomerFromResponse(responseCustomerPost);
+    Assume.That(responseCustomerPostObject, Is.Not.Null);
 
     var order = new { CustomerId = responseCustomerPostObject.Id, Amount = 1 };
 
@@ -90,6 +92,7 @@ public class OrderTests
     var atLeastOneCustomer = new { Name = "Alice" };
     var responsePostCustomer = await client.PostAsJsonAsync("/customers", atLeastOneCustomer);
     var responsePostCustomerObject = await GetCustomerFromResponse(responsePostCustomer);
+    Assume.That(responsePostCustomerObject, Is.Not.Null);
 
     var expectedOrder = new { CustomerId = responsePostCustomerObject.Id, Amount = 1 };
     var responsePostOrder = await client.PostAsJsonAsync("/orders", expectedOrder);
@@ -119,6 +122,7 @@ public class OrderTests
     Assume.That(responsePostCustomer.StatusCode, Is.EqualTo(HttpStatusCode.Created));
 
     var responsePostCustomerObject = await GetCustomerFromResponse(responsePostCustomer);
+    Assume.That(responsePostCustomerObject, Is.Not.Null);
 
     var expectedOrder = new { Amount = 1, CustomerId = responsePostCustomerObject.Id };
     var responsePostOrder = await client.PostAsJsonAsync("/orders", expectedOrder);
@@ -127,6 +131,7 @@ public class OrderTests
     var createdOrderContent = await responsePostOrder.Content.ReadAsStringAsync();
     var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
     var createdOrder = JsonSerializer.Deserialize<Order>(createdOrderContent, options);
+    Assume.That(createdOrder, Is.Not.Null);
 
     // Act
     var responseGetOrder = await client.GetAsync($"/orders/{createdOrder.Id}");
@@ -269,7 +274,7 @@ public class OrderTests
     Assert.That(untouchedOrder.IsDeleted, Is.False);
   }
 
-  private static async Task<Customer> GetCustomerFromResponse(HttpResponseMessage response)
+  private static async Task<Customer?> GetCustomerFromResponse(HttpResponseMessage response)
   {
     string responseJson = await response.Content.ReadAsStringAsync();
     JsonSerializerOptions options = new() { PropertyNameCaseInsensitive = true };

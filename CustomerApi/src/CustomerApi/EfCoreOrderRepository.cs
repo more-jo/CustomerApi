@@ -1,9 +1,5 @@
 namespace CustomerApi;
 
-/// <summary>
-/// In-memory repository for local development and testing.
-/// Registered as Singleton so all requests share the same data within one app instance.
-/// </summary>
 public class EfCoreOrderRepository : IOrderRepository
 {
     private const bool SUCCESS = true;
@@ -48,7 +44,7 @@ public class EfCoreOrderRepository : IOrderRepository
         return _dbContext.Orders.Where(order => order.CustomerId == customerId).ToList();
     }
 
-    public Order GetOrderByOrderId(int orderId)
+    public Order? GetOrderByOrderId(int orderId)
     {
         return _dbContext.Orders.FirstOrDefault(order => order.Id == orderId);
     }

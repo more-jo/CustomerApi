@@ -1,3 +1,5 @@
+namespace CustomerApi.Tests;
+
 using System.Net;
 using Microsoft.AspNetCore.Mvc.Testing;
 using System.Text.Json;
@@ -5,15 +7,13 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Hosting;
 
-namespace CustomerApi.Tests;
-
 public class ExceptionTests
 {
   [Test]
   public async Task UnhandledException_Returns500WithProblemDetails()
   {
     // Arrange 
-    var factory = new WebApplicationFactory<Program>();
+    var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(b => b.UseEnvironment("Development"));
     var client = factory.CreateClient();
 
     // Act

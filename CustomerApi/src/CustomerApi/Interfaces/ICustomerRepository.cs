@@ -31,7 +31,9 @@ public interface ICustomerRepository
     bool Update(int id, string newCustomerName);
 
     /// <summary>
-    /// Delete one customer on position.
+    /// Marks the customer as deleted (soft delete). The record remains retrievable.
+    /// Returns bool for presence of customer.
+    /// False if absent.
     /// </summary>
     bool Delete(int id);
 }

@@ -7,7 +7,7 @@ interface IOrderRepository
 {
   List<Order> GetOrderByCustomerId(int customerId);
 
-  Order GetOrderByOrderId(int orderId);
+  Order? GetOrderByOrderId(int orderId);
 
   int GetMaxId();
 

@@ -11,11 +11,9 @@ public partial class Program
         // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
         builder.Services.AddOpenApi();
 
-        // Register ICustomerRepository as Singleton.
-        // This means all requests within the app instance share the same data store.
-        // Each WebApplicationFactory in tests creates a fresh app with a fresh repository.
-        // builder.Services.AddSingleton<ICustomerRepository, InMemoryCustomerRepository>();
-
+        // scoped since it depends on CustomerDbContext which is scoped
+        // earlier version used in memory singleton. That was replaced with per instance memory
+        // that gives in the tests an isolated data store.
         ConfigureDatabase(builder.Services);
         builder.Services.AddScoped<ICustomerRepository, EfCoreCustomerRepository>();
         builder.Services.AddScoped<IOrderRepository, EfCoreOrderRepository>();
@@ -31,6 +29,11 @@ public partial class Program
         if (app.Environment.IsDevelopment())
         {
             app.MapOpenApi();
+            app.MapGet("/throw", () =>
+                {
+                    throw new InvalidOperationException();
+                }
+            );
         }
 
         app.UseMiddleware<ExceptionHandlingMiddleware>();
@@ -49,11 +52,6 @@ public partial class Program
         {
             var customer = repo.GetCustomerById(id);
             return customer is not null ? Results.Ok(customer) : Results.NotFound();
-        });
-
-        app.MapGet("/throw", () =>
-        {
-            throw new InvalidOperationException();
         });
 
         app.MapPost(CUSTOMER_ROUTE, (CreateCustomerRequest newCustomer, ICustomerRepository repo) =>
