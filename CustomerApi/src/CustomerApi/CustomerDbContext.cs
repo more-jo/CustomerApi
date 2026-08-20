@@ -17,7 +17,7 @@ public class CustomerDbContext : DbContext
             .WithMany()
             .HasForeignKey(o => o.CustomerId);
 
-        modelBuilder.Entity<Order>().HasKey(o => o.Id); // eplicit ID assignment
+        modelBuilder.Entity<Order>().HasKey(o => o.Id); // explicit ID assignment
         modelBuilder.Entity<Customer>().HasKey(c => c.Id);
     }
 }
