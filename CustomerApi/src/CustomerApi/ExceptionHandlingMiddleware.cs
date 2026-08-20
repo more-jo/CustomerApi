@@ -67,11 +67,11 @@ public class ExceptionHandlingMiddleware
 
       if (statusCode >= StatusCodes.Status500InternalServerError)
       {
-        _logger.LogError(ex, $"Unhandled exception on {httpContext.Request.Path}, traceId {httpContext.TraceIdentifier}");
+        _logger.LogError(ex, "Unhandled exception on {Path}, traceId {TraceId}", httpContext.Request.Path, httpContext.TraceIdentifier);
       }
       else
       {
-        _logger.LogWarning($"Invalid request on {httpContext.Request.Path}, traceId {httpContext.TraceIdentifier}");
+        _logger.LogWarning("Invalid request on {Path}, traceId {TraceId}", httpContext.Request.Path, httpContext.TraceIdentifier);
       }
 
       await httpContext.Response.WriteAsJsonAsync(problemDetails);
