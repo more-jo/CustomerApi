@@ -10,12 +10,15 @@ public class GetCustomersTests
 {
     private WebApplicationFactory<Program> _factory = null!;
     private HttpClient _client = null!;
+    private TestContextManager _testContextManager;
 
     [SetUp]
     public async Task Setup()
     {
         _factory = new WebApplicationFactory<Program>();
         _client = _factory.CreateClient();
+
+        _testContextManager = new TestContextManager();
     }
 
     [TearDown]
@@ -29,15 +32,8 @@ public class GetCustomersTests
     public async Task GetCustomers_ReturnsCorrectArray()
     {
         // Arrange
-        var customer1 = new { Name = "Alice" };
-        var responsePostCustomer1 = await _client.PostAsJsonAsync("/customers", customer1);
-        var responsePostCustomerObject = await GetCustomerFromResponse(responsePostCustomer1);
-        Assume.That(responsePostCustomerObject, Is.Not.Null);
-
-        var customer2 = new { Name = "Bob" };
-        var responsePostCustomer2 = await _client.PostAsJsonAsync("/customers", customer2);
-        var responsePostCustomerObject2 = await GetCustomerFromResponse(responsePostCustomer2);
-        Assume.That(responsePostCustomerObject2, Is.Not.Null);
+        await _testContextManager.CreateCustomerAsync(_client, "Alice");
+        await _testContextManager.CreateCustomerAsync(_client, "Bob");
 
         // Act
         var response = await _client.GetAsync("/customers");
@@ -61,10 +57,7 @@ public class GetCustomersTests
     public async Task HappyPath_GetCustomerId_ReturnsCorrectCustomer200()
     {
         // Arrange
-        var customer1 = new { Name = "Alice" };
-        var responsePostCustomer1 = await _client.PostAsJsonAsync("/customers", customer1);
-        var responsePostCustomerObject = await GetCustomerFromResponse(responsePostCustomer1);
-        Assume.That(responsePostCustomerObject, Is.Not.Null);
+        var responsePostCustomerObject = await _testContextManager.CreateCustomerAsync(_client, "Alice");
 
         // Act
         var response = await _client.GetAsync($"/customers/{responsePostCustomerObject.Id}");
@@ -113,19 +106,14 @@ public class GetCustomersTests
     public async Task GetCustomers_DeleteOne_ReturnsCustomersWithCorrectDeletionFlag()
     {
         // Arrange
-        var newCustomer1 = new CreateCustomerRequest("1");
-        var newCustomer2 = new CreateCustomerRequest("2");
-        var newCustomer3 = new CreateCustomerRequest("3");
+        var newCustomerName1 = "1";
+        var newCustomerName2 = "2";
+        var newCustomerName3 = "3";
+        await _testContextManager.CreateCustomerAsync(_client, newCustomerName1);
+        var createdCustomer2FromResponse = await _testContextManager.CreateCustomerAsync(_client, "2");
+        await _testContextManager.CreateCustomerAsync(_client, newCustomerName2);
+        await _testContextManager.CreateCustomerAsync(_client, newCustomerName3);
 
-        var createdCustomer1Response = await _client.PostAsJsonAsync($"/customers", newCustomer1);
-        Assume.That(createdCustomer1Response.StatusCode, Is.EqualTo(HttpStatusCode.Created));
-        var createdCustomer2Response = await _client.PostAsJsonAsync($"/customers", newCustomer2);
-        Assume.That(createdCustomer2Response.StatusCode, Is.EqualTo(HttpStatusCode.Created));
-        var createdCustomer3Response = await _client.PostAsJsonAsync($"/customers", newCustomer3);
-        Assume.That(createdCustomer3Response.StatusCode, Is.EqualTo(HttpStatusCode.Created));
-
-        var createdCustomer2FromResponse = await GetCustomerFromContentAsync(createdCustomer2Response.Content);
-        Assert.That(createdCustomer2FromResponse, Is.Not.Null);
         var deleteCustomerResponse = await _client.DeleteAsync($"/customers/{createdCustomer2FromResponse.Id}");
         Assume.That(deleteCustomerResponse.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
 
@@ -140,31 +128,16 @@ public class GetCustomersTests
         var customers = JsonSerializer.Deserialize<List<Customer>>(content, options);
         Assert.That(customers, Is.Not.Null);
 
-        var deletedCustomer2 = customers.FirstOrDefault(c => c.Name == newCustomer2.Name);
+        var deletedCustomer2 = customers.FirstOrDefault(c => c.Name == newCustomerName2);
         Assert.That(deletedCustomer2, Is.Not.Null);
         Assert.That(deletedCustomer2.IsDeleted, Is.True);
 
-        var notDeletedCustomer1 = customers.FirstOrDefault(c => c.Name == newCustomer1.Name);
+        var notDeletedCustomer1 = customers.FirstOrDefault(c => c.Name == newCustomerName1);
         Assert.That(notDeletedCustomer1, Is.Not.Null);
         Assert.That(notDeletedCustomer1.IsDeleted, Is.False);
 
-        var notDeletedCustomer3 = customers.FirstOrDefault(c => c.Name == newCustomer3.Name);
+        var notDeletedCustomer3 = customers.FirstOrDefault(c => c.Name == newCustomerName3);
         Assert.That(notDeletedCustomer3, Is.Not.Null);
         Assert.That(notDeletedCustomer3.IsDeleted, Is.False);
-    }
-
-    private async Task<CustomerResponse?> GetCustomerFromContentAsync(HttpContent content)
-    {
-        var responseString = await content.ReadAsStringAsync();
-        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-        return JsonSerializer.Deserialize<CustomerResponse>(responseString, options);
-    }
-
-    private static async Task<Customer?> GetCustomerFromResponse(HttpResponseMessage response)
-    {
-        string responseJson = await response.Content.ReadAsStringAsync();
-        JsonSerializerOptions options = new() { PropertyNameCaseInsensitive = true };
-        var customer = JsonSerializer.Deserialize<Customer>(responseJson, options);
-        return customer;
     }
 }

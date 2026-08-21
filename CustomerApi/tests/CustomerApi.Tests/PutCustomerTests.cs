@@ -9,12 +9,15 @@ public class PutCustomerTests
 {
     private WebApplicationFactory<Program> _factory = null!;
     private HttpClient _client = null!;
+    private TestContextManager _testContextManager;
 
     [SetUp]
     public async Task Setup()
     {
         _factory = new WebApplicationFactory<Program>();
         _client = _factory.CreateClient();
+
+        _testContextManager = new TestContextManager();
     }
 
     [TearDown]
@@ -28,10 +31,7 @@ public class PutCustomerTests
     public async Task PutCustomer_UpdateUserName_Returns204()
     {
         // Arrange
-        var customer1 = new { Name = "Alice" };
-        var responsePostCustomer1 = await _client.PostAsJsonAsync("/customers", customer1);
-        var responsePostCustomerObject = await GetCustomerFromResponse(responsePostCustomer1);
-        Assume.That(responsePostCustomerObject, Is.Not.Null);
+        var customer1 = await _testContextManager.CreateCustomerAsync(_client, "Alice");
 
         var expectation = "Alice updated";
 
@@ -40,8 +40,8 @@ public class PutCustomerTests
         var httpContent = new StringContent(jsonValue, System.Text.Encoding.UTF8, "application/json");
 
         // Act
-        var responsePut = await _client.PutAsync("/customers/1", httpContent);
-        var responseGet = await _client.GetAsync("/customers/1");
+        var responsePut = await _client.PutAsync($"/customers/{customer1.Id}", httpContent);
+        var responseGet = await _client.GetAsync($"/customers/{customer1.Id}");
 
         // Assert
         Assert.That(responsePut.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
@@ -50,7 +50,7 @@ public class PutCustomerTests
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         var customer = JsonSerializer.Deserialize<Customer>(responseString, options);
         Assert.That(customer, Is.Not.Null);
-        Assert.That(customer.Id, Is.EqualTo(1));
+        Assert.That(customer.Id, Is.EqualTo(customer1.Id));
         Assert.That(customer.Name, Is.EqualTo(expectation));
     }
 
@@ -58,18 +58,15 @@ public class PutCustomerTests
     public async Task PutCustomer_UpdateUserNameUnnecessaryId_Returns204()
     {
         // Arrange
-        var customer1 = new { Name = "Alice" };
-        var responsePostCustomer1 = await _client.PostAsJsonAsync("/customers", customer1);
-        var responsePostCustomerObject = await GetCustomerFromResponse(responsePostCustomer1);
-        Assume.That(responsePostCustomerObject, Is.Not.Null);
+        var customer1 = await _testContextManager.CreateCustomerAsync(_client, "Alice");
 
         var updatedValue = new { Id = 999, Name = "Alice updated" };
         var jsonValue = JsonSerializer.Serialize(updatedValue);
         var httpContent = new StringContent(jsonValue, System.Text.Encoding.UTF8, "application/json");
 
         // Act 
-        var response = await _client.PutAsync("/customers/1", httpContent);
-        var responseGet = await _client.GetAsync("/customers/1");
+        var response = await _client.PutAsync($"/customers/{customer1.Id}", httpContent);
+        var responseGet = await _client.GetAsync($"/customers/{customer1.Id}");
 
         // Assert
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
@@ -79,7 +76,7 @@ public class PutCustomerTests
         var option = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         var customer = JsonSerializer.Deserialize<Customer>(responseString, option);
         Assert.That(customer, Is.Not.Null);
-        Assert.That(customer.Id, Is.EqualTo(1));
+        Assert.That(customer.Id, Is.EqualTo(customer1.Id));
         Assert.That(customer.Name, Is.EqualTo(updatedValue.Name));
     }
 
@@ -162,13 +159,5 @@ public class PutCustomerTests
 
         // Assert
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.UnprocessableEntity));
-    }
-
-    private static async Task<Customer?> GetCustomerFromResponse(HttpResponseMessage response)
-    {
-        string responseJson = await response.Content.ReadAsStringAsync();
-        JsonSerializerOptions options = new() { PropertyNameCaseInsensitive = true };
-        var customer = JsonSerializer.Deserialize<Customer>(responseJson, options);
-        return customer;
     }
 }

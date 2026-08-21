@@ -7,6 +7,14 @@ namespace CustomerApi.Tests;
 
 public class DeleteCustomerTests
 {
+    private TestContextManager _testContextManager;
+
+    [SetUp]
+    public async Task Setup()
+    {
+        _testContextManager = new TestContextManager();
+    }
+
     [Test]
     public async Task DeleteAbsentCustomer_ReturnsNotFound()
     {
@@ -27,14 +35,8 @@ public class DeleteCustomerTests
         // Arrange
         await using var factory = new WebApplicationFactory<Program>();
         var client = factory.CreateClient();
-        var atLeastOneCustomer = new { Name = "Charlie" };
 
-        var responsePostBefore = await client.PostAsJsonAsync("/customers/", atLeastOneCustomer);
-        Assume.That(responsePostBefore.StatusCode, Is.EqualTo(HttpStatusCode.Created));
-
-        var customerBeforeDeletion = await GetCustomerFromContent(responsePostBefore.Content);
-        Assume.That(customerBeforeDeletion, Is.Not.Null);
-        Assume.That(customerBeforeDeletion.IsDeleted, Is.False);
+        var customerBeforeDeletion = await _testContextManager.CreateCustomerAsync(client, "Charlie");
 
         // Act
         var responseDelete = await client.DeleteAsync($"/customers/{customerBeforeDeletion.Id}");

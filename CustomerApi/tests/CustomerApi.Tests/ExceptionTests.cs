@@ -12,12 +12,14 @@ public class ExceptionTests
 {
   private WebApplicationFactory<Program> _factory = null!;
   private HttpClient _client = null!;
+  private TestContextManager _testContextManager;
 
   [SetUp]
   public async Task Setup()
   {
     _factory = new WebApplicationFactory<Program>();
     _client = _factory.CreateClient();
+    _testContextManager = new TestContextManager();
   }
 
   [TearDown]
@@ -70,16 +72,13 @@ public class ExceptionTests
   public async Task ExceptionHandlingMiddleware_DoesNotAffectNormalRequests()
   {
     // Arrange
-    var atLeastOneCustomer = new { Name = "Alice" };
-    var responsePostCustomer = await _client.PostAsJsonAsync("/customers", atLeastOneCustomer);
-    var responsePostCustomerObject = await GetCustomerFromResponse(responsePostCustomer);
-    Assume.That(responsePostCustomerObject, Is.Not.Null);
+    var responsePostCustomerObject = await _testContextManager.CreateCustomerAsync(_client, "Charlie");
 
-    // GET existierende Ressource
+    // GET existing ressource
     var responseGet = await _client.GetAsync($"/customers/{responsePostCustomerObject.Id}");
     Assert.That(responseGet.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
-    // POST neue Ressource
+    // POST
     var newCustomer = new { Name = "Test" };
     var json = JsonSerializer.Serialize(newCustomer);
     var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
@@ -173,13 +172,5 @@ public class ExceptionTests
     Assert.That(detailsUpdate.ProblemDetails.Detail, Is.EqualTo("The request body is invalid or missing."));
     Assert.That(detailsUpdate.ProblemDetails.Extensions["errorCode"], Is.Not.Null);
     Assert.That(detailsUpdate.ProblemDetails.Extensions["errorCode"].ToString(), Is.EqualTo("NAME_REQUIRED"));
-  }
-
-  private static async Task<Customer?> GetCustomerFromResponse(HttpResponseMessage response)
-  {
-    string responseJson = await response.Content.ReadAsStringAsync();
-    JsonSerializerOptions options = new() { PropertyNameCaseInsensitive = true };
-    var customer = JsonSerializer.Deserialize<Customer>(responseJson, options);
-    return customer;
   }
 }
