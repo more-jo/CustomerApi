@@ -1,26 +1,47 @@
 ﻿using System.Net;
 using Microsoft.AspNetCore.Mvc.Testing;
 using System.Text.Json;
+using System.Net.Http.Json;
 
 namespace CustomerApi.Tests;
 
 public class PutCustomerTests
 {
+    private WebApplicationFactory<Program> _factory = null!;
+    private HttpClient _client = null!;
+
+    [SetUp]
+    public async Task Setup()
+    {
+        _factory = new WebApplicationFactory<Program>();
+        _client = _factory.CreateClient();
+    }
+
+    [TearDown]
+    public async Task TearDown()
+    {
+        _client.Dispose();
+        await _factory.DisposeAsync();
+    }
+
     [Test]
     public async Task PutCustomer_UpdateUserName_Returns204()
     {
         // Arrange
-        var factory = new WebApplicationFactory<Program>();
-        var client = factory.CreateClient();
+        var customer1 = new { Name = "Alice" };
+        var responsePostCustomer1 = await _client.PostAsJsonAsync("/customers", customer1);
+        var responsePostCustomerObject = await GetCustomerFromResponse(responsePostCustomer1);
+        Assume.That(responsePostCustomerObject, Is.Not.Null);
+
         var expectation = "Alice updated";
 
         var updatedValue = new { Name = expectation };
         var jsonValue = JsonSerializer.Serialize(updatedValue);
         var httpContent = new StringContent(jsonValue, System.Text.Encoding.UTF8, "application/json");
 
-        // Act 
-        var responsePut = await client.PutAsync("/customers/1", httpContent);
-        var responseGet = await client.GetAsync("/customers/1");
+        // Act
+        var responsePut = await _client.PutAsync("/customers/1", httpContent);
+        var responseGet = await _client.GetAsync("/customers/1");
 
         // Assert
         Assert.That(responsePut.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
@@ -37,16 +58,18 @@ public class PutCustomerTests
     public async Task PutCustomer_UpdateUserNameUnnecessaryId_Returns204()
     {
         // Arrange
-        var factory = new WebApplicationFactory<Program>();
-        var client = factory.CreateClient();
+        var customer1 = new { Name = "Alice" };
+        var responsePostCustomer1 = await _client.PostAsJsonAsync("/customers", customer1);
+        var responsePostCustomerObject = await GetCustomerFromResponse(responsePostCustomer1);
+        Assume.That(responsePostCustomerObject, Is.Not.Null);
 
         var updatedValue = new { Id = 999, Name = "Alice updated" };
         var jsonValue = JsonSerializer.Serialize(updatedValue);
         var httpContent = new StringContent(jsonValue, System.Text.Encoding.UTF8, "application/json");
 
         // Act 
-        var response = await client.PutAsync("/customers/1", httpContent);
-        var responseGet = await client.GetAsync("/customers/1");
+        var response = await _client.PutAsync("/customers/1", httpContent);
+        var responseGet = await _client.GetAsync("/customers/1");
 
         // Assert
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
@@ -64,15 +87,12 @@ public class PutCustomerTests
     public async Task PutCustomer_WhenAbsentId_Returns404()
     {
         // Arrange
-        var factory = new WebApplicationFactory<Program>();
-        var client = factory.CreateClient();
-
         var updatedValue = new { Name = "Alice updated" };
         var jsonValue = JsonSerializer.Serialize(updatedValue);
         var httpContent = new StringContent(jsonValue, System.Text.Encoding.UTF8, "application/json");
 
         // Act 
-        var response = await client.PutAsync("/customers/999", httpContent);
+        var response = await _client.PutAsync("/customers/999", httpContent);
 
         // Assert
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
@@ -82,13 +102,10 @@ public class PutCustomerTests
     public async Task PutCustomer_WhenMalformedJson_ReturnsBadRequest()
     {
         // Arrange
-        var factory = new WebApplicationFactory<Program>();
-        var client = factory.CreateClient();
-
         var httpContent = new StringContent("{ Name: }", System.Text.Encoding.UTF8, "application/json");
 
         // Act 
-        var response = await client.PutAsync("/customers/1", httpContent);
+        var response = await _client.PutAsync("/customers/1", httpContent);
 
         // Assert
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
@@ -98,13 +115,10 @@ public class PutCustomerTests
     public async Task PutCustomer_WhenNameIsMissing_ReturnsUnprocessableEntity()
     {
         // Arrange
-        var factory = new WebApplicationFactory<Program>();
-        var client = factory.CreateClient();
-
         var httpContent = new StringContent("{ }", System.Text.Encoding.UTF8, "application/json");
 
         // Act 
-        var response = await client.PutAsync("/customers/1", httpContent);
+        var response = await _client.PutAsync("/customers/1", httpContent);
 
         // Assert
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.UnprocessableEntity));
@@ -114,13 +128,10 @@ public class PutCustomerTests
     public async Task PutCustomer_WhenNameIsMissing_Returns422WithProblemDetails()
     {
         // Arrange
-        var factory = new WebApplicationFactory<Program>();
-        var client = factory.CreateClient();
-
         var httpContent = new StringContent("{ }", System.Text.Encoding.UTF8, "application/json");
 
         // Act 
-        var response = await client.PutAsync("/customers/1", httpContent);
+        var response = await _client.PutAsync("/customers/1", httpContent);
 
         // Assert
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.UnprocessableEntity));
@@ -142,17 +153,22 @@ public class PutCustomerTests
     public async Task PutCustomer_WhenNameIsEmpty_ReturnsUnprocessableEntity()
     {
         // Arrange
-        var factory = new WebApplicationFactory<Program>();
-        var client = factory.CreateClient();
-
         var updatedValue = new { Name = string.Empty };
         var jsonValue = JsonSerializer.Serialize(updatedValue);
         var httpContent = new StringContent(jsonValue, System.Text.Encoding.UTF8, "application/json");
 
         // Act 
-        var response = await client.PutAsync("/customers/1", httpContent);
+        var response = await _client.PutAsync("/customers/1", httpContent);
 
         // Assert
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.UnprocessableEntity));
+    }
+
+    private static async Task<Customer?> GetCustomerFromResponse(HttpResponseMessage response)
+    {
+        string responseJson = await response.Content.ReadAsStringAsync();
+        JsonSerializerOptions options = new() { PropertyNameCaseInsensitive = true };
+        var customer = JsonSerializer.Deserialize<Customer>(responseJson, options);
+        return customer;
     }
 }

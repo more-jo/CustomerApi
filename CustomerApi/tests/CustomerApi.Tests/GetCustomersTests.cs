@@ -8,31 +8,39 @@ namespace CustomerApi.Tests;
 
 public class GetCustomersTests
 {
-    [Test]
-    public async Task SeedDataBase_DatabaseContainsSeedData()
+    private WebApplicationFactory<Program> _factory = null!;
+    private HttpClient _client = null!;
+
+    [SetUp]
+    public async Task Setup()
     {
-        // Arrange
-        await using var factory = new WebApplicationFactory<Program>();
-        factory.CreateClient();
+        _factory = new WebApplicationFactory<Program>();
+        _client = _factory.CreateClient();
+    }
 
-        // Act
-        using var scope = factory.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<CustomerDbContext>();
-        var customers = db.Customers.ToList();
-
-        // Assert
-        Assert.That(customers, Is.Not.Empty);
+    [TearDown]
+    public async Task TearDown()
+    {
+        _client.Dispose();
+        await _factory.DisposeAsync();
     }
 
     [Test]
     public async Task GetCustomers_ReturnsCorrectArray()
     {
         // Arrange
-        await using var factory = new WebApplicationFactory<Program>();
-        var client = factory.CreateClient();
+        var customer1 = new { Name = "Alice" };
+        var responsePostCustomer1 = await _client.PostAsJsonAsync("/customers", customer1);
+        var responsePostCustomerObject = await GetCustomerFromResponse(responsePostCustomer1);
+        Assume.That(responsePostCustomerObject, Is.Not.Null);
+
+        var customer2 = new { Name = "Bob" };
+        var responsePostCustomer2 = await _client.PostAsJsonAsync("/customers", customer2);
+        var responsePostCustomerObject2 = await GetCustomerFromResponse(responsePostCustomer2);
+        Assume.That(responsePostCustomerObject2, Is.Not.Null);
 
         // Act
-        var response = await client.GetAsync("/customers");
+        var response = await _client.GetAsync("/customers");
 
         // Assert
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
@@ -53,11 +61,13 @@ public class GetCustomersTests
     public async Task HappyPath_GetCustomerId_ReturnsCorrectCustomer200()
     {
         // Arrange
-        await using var factory = new WebApplicationFactory<Program>();
-        var client = factory.CreateClient();
+        var customer1 = new { Name = "Alice" };
+        var responsePostCustomer1 = await _client.PostAsJsonAsync("/customers", customer1);
+        var responsePostCustomerObject = await GetCustomerFromResponse(responsePostCustomer1);
+        Assume.That(responsePostCustomerObject, Is.Not.Null);
 
         // Act
-        var response = await client.GetAsync("/customers/1");
+        var response = await _client.GetAsync($"/customers/{responsePostCustomerObject.Id}");
 
         // Assert
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
@@ -72,12 +82,8 @@ public class GetCustomersTests
     [Test]
     public async Task GetCustomerById_NonExistentId_Returns404()
     {
-        // Arrange
-        await using var factory = new WebApplicationFactory<Program>();
-        var client = factory.CreateClient();
-
         // Act
-        var response = await client.GetAsync("/customers/999");
+        var response = await _client.GetAsync("/customers/999");
 
         // Assert
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
@@ -86,26 +92,18 @@ public class GetCustomersTests
     [Test]
     public async Task GetCustomerById_NonExistentString_Returns404()
     {
-        // Arrange
-        await using var factory = new WebApplicationFactory<Program>();
-        var client = factory.CreateClient();
-
         // Act
-        var response = await client.GetAsync("/customers/abc");
+        var response = await _client.GetAsync("/customers/abc");
 
         // Assert
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
     }
 
     [Test]
-    public async Task GetCustomerEmpty_Returns400()
+    public async Task GetCustomerEmptyRoute_Returns404()
     {
-        // Arrange
-        await using var factory = new WebApplicationFactory<Program>();
-        var client = factory.CreateClient();
-
         // Act
-        var response = await client.GetAsync(string.Empty);
+        var response = await _client.GetAsync(string.Empty);
 
         // Assert
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
@@ -115,27 +113,24 @@ public class GetCustomersTests
     public async Task GetCustomers_DeleteOne_ReturnsCustomersWithCorrectDeletionFlag()
     {
         // Arrange
-        await using var factory = new WebApplicationFactory<Program>();
-        var client = factory.CreateClient();
-
         var newCustomer1 = new CreateCustomerRequest("1");
         var newCustomer2 = new CreateCustomerRequest("2");
         var newCustomer3 = new CreateCustomerRequest("3");
 
-        var createdCustomer1Response = await client.PostAsJsonAsync($"/customers", newCustomer1);
+        var createdCustomer1Response = await _client.PostAsJsonAsync($"/customers", newCustomer1);
         Assume.That(createdCustomer1Response.StatusCode, Is.EqualTo(HttpStatusCode.Created));
-        var createdCustomer2Response = await client.PostAsJsonAsync($"/customers", newCustomer2);
+        var createdCustomer2Response = await _client.PostAsJsonAsync($"/customers", newCustomer2);
         Assume.That(createdCustomer2Response.StatusCode, Is.EqualTo(HttpStatusCode.Created));
-        var createdCustomer3Response = await client.PostAsJsonAsync($"/customers", newCustomer3);
+        var createdCustomer3Response = await _client.PostAsJsonAsync($"/customers", newCustomer3);
         Assume.That(createdCustomer3Response.StatusCode, Is.EqualTo(HttpStatusCode.Created));
 
         var createdCustomer2FromResponse = await GetCustomerFromContentAsync(createdCustomer2Response.Content);
         Assert.That(createdCustomer2FromResponse, Is.Not.Null);
-        var deleteCustomerResponse = await client.DeleteAsync($"/customers/{createdCustomer2FromResponse.Id}");
+        var deleteCustomerResponse = await _client.DeleteAsync($"/customers/{createdCustomer2FromResponse.Id}");
         Assume.That(deleteCustomerResponse.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
 
         // Act
-        var response = await client.GetAsync("/customers");
+        var response = await _client.GetAsync("/customers");
 
         // Assert
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.OK));
@@ -163,5 +158,13 @@ public class GetCustomersTests
         var responseString = await content.ReadAsStringAsync();
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         return JsonSerializer.Deserialize<CustomerResponse>(responseString, options);
+    }
+
+    private static async Task<Customer?> GetCustomerFromResponse(HttpResponseMessage response)
+    {
+        string responseJson = await response.Content.ReadAsStringAsync();
+        JsonSerializerOptions options = new() { PropertyNameCaseInsensitive = true };
+        var customer = JsonSerializer.Deserialize<Customer>(responseJson, options);
+        return customer;
     }
 }

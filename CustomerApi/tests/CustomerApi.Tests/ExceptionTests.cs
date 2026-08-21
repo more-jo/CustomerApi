@@ -3,18 +3,36 @@ namespace CustomerApi.Tests;
 using System.Net;
 using Microsoft.AspNetCore.Mvc.Testing;
 using System.Text.Json;
+using System.Net.Http.Json;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Hosting;
 
 public class ExceptionTests
 {
+  private WebApplicationFactory<Program> _factory = null!;
+  private HttpClient _client = null!;
+
+  [SetUp]
+  public async Task Setup()
+  {
+    _factory = new WebApplicationFactory<Program>();
+    _client = _factory.CreateClient();
+  }
+
+  [TearDown]
+  public async Task TearDown()
+  {
+    _client.Dispose();
+    await _factory.DisposeAsync();
+  }
+
   [Test]
   public async Task UnhandledException_Returns500WithProblemDetails()
   {
     // Arrange 
-    var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(b => b.UseEnvironment("Development"));
-    var client = factory.CreateClient();
+    await using var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(b => b.UseEnvironment("Development"));
+    using var client = factory.CreateClient();
 
     // Act
     var response = await client.GetAsync("/throw");
@@ -32,8 +50,8 @@ public class ExceptionTests
   public async Task UnhandledException_ReturnsErrorWithoutRevealingDetails()
   {
     // Arrange 
-    var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(b => b.UseEnvironment("Development"));
-    var client = factory.CreateClient();
+    await using var factory = new WebApplicationFactory<Program>().WithWebHostBuilder(b => b.UseEnvironment("Development"));
+    using var client = factory.CreateClient();
 
     // Act
     var response = await client.GetAsync("/throw");
@@ -51,18 +69,25 @@ public class ExceptionTests
   [Test]
   public async Task ExceptionHandlingMiddleware_DoesNotAffectNormalRequests()
   {
-    var factory = new WebApplicationFactory<Program>();
-    var client = factory.CreateClient();
+    // Arrange
+    var atLeastOneCustomer = new { Name = "Alice" };
+    var responsePostCustomer = await _client.PostAsJsonAsync("/customers", atLeastOneCustomer);
+    var responsePostCustomerObject = await GetCustomerFromResponse(responsePostCustomer);
+    Assume.That(responsePostCustomerObject, Is.Not.Null);
 
     // GET existierende Ressource
-    var responseGet = await client.GetAsync("/customers/1");
+    var responseGet = await _client.GetAsync($"/customers/{responsePostCustomerObject.Id}");
     Assert.That(responseGet.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
     // POST neue Ressource
     var newCustomer = new { Name = "Test" };
     var json = JsonSerializer.Serialize(newCustomer);
     var content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
-    var responsePost = await client.PostAsync("/customers", content);
+
+    // Act
+    var responsePost = await _client.PostAsync("/customers", content);
+
+    // Assert
     Assert.That(responsePost.StatusCode, Is.EqualTo(HttpStatusCode.Created));
   }
 
@@ -148,5 +173,13 @@ public class ExceptionTests
     Assert.That(detailsUpdate.ProblemDetails.Detail, Is.EqualTo("The request body is invalid or missing."));
     Assert.That(detailsUpdate.ProblemDetails.Extensions["errorCode"], Is.Not.Null);
     Assert.That(detailsUpdate.ProblemDetails.Extensions["errorCode"].ToString(), Is.EqualTo("NAME_REQUIRED"));
+  }
+
+  private static async Task<Customer?> GetCustomerFromResponse(HttpResponseMessage response)
+  {
+    string responseJson = await response.Content.ReadAsStringAsync();
+    JsonSerializerOptions options = new() { PropertyNameCaseInsensitive = true };
+    var customer = JsonSerializer.Deserialize<Customer>(responseJson, options);
+    return customer;
   }
 }

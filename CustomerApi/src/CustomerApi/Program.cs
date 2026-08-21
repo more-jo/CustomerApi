@@ -23,8 +23,6 @@ public partial class Program
 
         var app = builder.Build();
 
-        SeedDataBase(app);
-
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())
         {
@@ -136,25 +134,6 @@ public partial class Program
         });
 
         app.Run();
-    }
-
-    private static void SeedDataBase(Microsoft.AspNetCore.Builder.WebApplication app)
-    {
-        using (var scope = app.Services.CreateScope())
-        {
-            var db = scope.ServiceProvider.GetRequiredService<CustomerDbContext>();
-            db.Database.EnsureCreated();
-
-            if (!db.Customers.Any())
-            {
-                db.Customers.AddRange(
-                    new Customer(1, "Alice"),
-                    new Customer(2, "Bob")
-                );
-            }
-
-            db.SaveChanges();
-        }
     }
 
     private static void ConfigureDatabase(IServiceCollection services)

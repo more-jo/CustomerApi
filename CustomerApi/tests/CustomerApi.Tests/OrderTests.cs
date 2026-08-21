@@ -7,6 +7,22 @@ namespace CustomerApi.Tests;
 
 public class OrderTests
 {
+  private System.Net.Http.HttpClient _client;
+
+  [SetUp]
+  public async Task Setup()
+  {
+    await using var factory = new WebApplicationFactory<Program>();
+    _client = factory.CreateClient();
+    var atLeastOneCustomer = new { Name = "Alice" };
+    var responsePostCustomer = await _client.PostAsJsonAsync("/customers", atLeastOneCustomer);
+  }
+
+  [TearDown]
+  public async Task TearDown()
+  {
+    _client.Dispose();
+  }
 
   [Test]
   public async Task GetOrders_CustomerExistsWithNoOrders_ReturnsEmptyList()
