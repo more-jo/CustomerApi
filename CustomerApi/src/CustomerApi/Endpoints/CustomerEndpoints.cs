@@ -2,7 +2,6 @@ namespace CustomerApi;
 
 public static class CustomerEndPoints
 {
-
   const string CUSTOMER_ROUTE = "/customers";
 
   public static void MapCustomerEndpoints(this WebApplication app)
