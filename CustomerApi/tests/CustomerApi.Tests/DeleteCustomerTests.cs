@@ -7,23 +7,30 @@ namespace CustomerApi.Tests;
 
 public class DeleteCustomerTests
 {
+    private WebApplicationFactory<Program> _factory = null!;
+    private System.Net.Http.HttpClient _client;
     private TestContextManager _testContextManager;
 
     [SetUp]
-    public async Task Setup()
+    public void Setup()
     {
+        _factory = new WebApplicationFactory<Program>();
+        _client = _factory.CreateClient();
         _testContextManager = new TestContextManager();
+    }
+
+    [TearDown]
+    public async Task TearDown()
+    {
+        _client.Dispose();
+        await _factory.DisposeAsync();
     }
 
     [Test]
     public async Task DeleteAbsentCustomer_ReturnsNotFound()
     {
-        // Arrange
-        await using var factory = new WebApplicationFactory<Program>();
-        var client = factory.CreateClient();
-
         // Act
-        var deleteRepsonse = await client.DeleteAsync("/customers/999");
+        var deleteRepsonse = await _client.DeleteAsync("/customers/999");
 
         // Assert
         Assert.That(deleteRepsonse.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
@@ -33,16 +40,13 @@ public class DeleteCustomerTests
     public async Task DeleteCustomer_ExistingId_ReturnsDeletedCustomer()
     {
         // Arrange
-        await using var factory = new WebApplicationFactory<Program>();
-        var client = factory.CreateClient();
-
-        var customerBeforeDeletion = await _testContextManager.CreateCustomerAsync(client, "Charlie");
+        var customerBeforeDeletion = await _testContextManager.CreateCustomerAsync(_client, "Charlie");
 
         // Act
-        var responseDelete = await client.DeleteAsync($"/customers/{customerBeforeDeletion.Id}");
+        var responseDelete = await _client.DeleteAsync($"/customers/{customerBeforeDeletion.Id}");
 
         // assert
-        var responseGetAfter = await client.GetAsync($"/customers/{customerBeforeDeletion.Id}");
+        var responseGetAfter = await _client.GetAsync($"/customers/{customerBeforeDeletion.Id}");
         var customerAfterDeletion = await GetCustomerFromContent(responseGetAfter.Content);
         Assert.That(customerAfterDeletion, Is.Not.Null);
         Assert.Multiple(() =>

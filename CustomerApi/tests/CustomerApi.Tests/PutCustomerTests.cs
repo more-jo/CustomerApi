@@ -12,7 +12,7 @@ public class PutCustomerTests
     private TestContextManager _testContextManager;
 
     [SetUp]
-    public async Task Setup()
+    public void Setup()
     {
         _factory = new WebApplicationFactory<Program>();
         _client = _factory.CreateClient();
@@ -99,6 +99,7 @@ public class PutCustomerTests
     public async Task PutCustomer_WhenMalformedJson_ReturnsBadRequest()
     {
         // Arrange
+        await _testContextManager.CreateCustomerAsync(_client, "Alice");
         var httpContent = new StringContent("{ Name: }", System.Text.Encoding.UTF8, "application/json");
 
         // Act 
@@ -112,6 +113,7 @@ public class PutCustomerTests
     public async Task PutCustomer_WhenNameIsMissing_ReturnsUnprocessableEntity()
     {
         // Arrange
+        await _testContextManager.CreateCustomerAsync(_client, "Alice");
         var httpContent = new StringContent("{ }", System.Text.Encoding.UTF8, "application/json");
 
         // Act 
@@ -125,6 +127,7 @@ public class PutCustomerTests
     public async Task PutCustomer_WhenNameIsMissing_Returns422WithProblemDetails()
     {
         // Arrange
+        await _testContextManager.CreateCustomerAsync(_client, "Alice");
         var httpContent = new StringContent("{ }", System.Text.Encoding.UTF8, "application/json");
 
         // Act 

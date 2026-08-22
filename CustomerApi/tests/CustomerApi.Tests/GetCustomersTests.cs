@@ -13,7 +13,7 @@ public class GetCustomersTests
     private TestContextManager _testContextManager;
 
     [SetUp]
-    public async Task Setup()
+    public void Setup()
     {
         _factory = new WebApplicationFactory<Program>();
         _client = _factory.CreateClient();
@@ -110,8 +110,7 @@ public class GetCustomersTests
         var newCustomerName2 = "2";
         var newCustomerName3 = "3";
         await _testContextManager.CreateCustomerAsync(_client, newCustomerName1);
-        var createdCustomer2FromResponse = await _testContextManager.CreateCustomerAsync(_client, "2");
-        await _testContextManager.CreateCustomerAsync(_client, newCustomerName2);
+        var createdCustomer2FromResponse = await _testContextManager.CreateCustomerAsync(_client, newCustomerName2);
         await _testContextManager.CreateCustomerAsync(_client, newCustomerName3);
 
         var deleteCustomerResponse = await _client.DeleteAsync($"/customers/{createdCustomer2FromResponse.Id}");

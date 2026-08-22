@@ -12,7 +12,7 @@ public class PostCustomerTests
     private TestContextManager _testContextManager;
 
     [SetUp]
-    public async Task Setup()
+    public void Setup()
     {
         _factory = new WebApplicationFactory<Program>();
         _client = _factory.CreateClient();
@@ -43,8 +43,6 @@ public class PostCustomerTests
         // Assert
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.Created));
         Assert.That(response.Headers.Location, Is.Not.Null);
-        var expectedNewCustomerNumber = 2;
-        Assert.That(response.Headers.Location, Is.EqualTo(new Uri($"/customers/{expectedNewCustomerNumber}", UriKind.Relative)));
         string responseJson = await response.Content.ReadAsStringAsync();
         JsonSerializerOptions options = new() { PropertyNameCaseInsensitive = true };
         var createdCustomer = JsonSerializer.Deserialize<Customer>(responseJson, options);

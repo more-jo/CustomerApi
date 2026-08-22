@@ -6,11 +6,11 @@ namespace CustomerApi.Tests;
 public class DeleteOrderTests
 {
   private WebApplicationFactory<Program> _factory = null!;
-  private System.Net.Http.HttpClient _client;
+  private System.Net.Http.HttpClient _client = null!;
   private TestContextManager _testContextManager;
 
   [SetUp]
-  public async Task Setup()
+  public void Setup()
   {
     _factory = new WebApplicationFactory<Program>();
     _client = _factory.CreateClient();
