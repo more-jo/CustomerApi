@@ -109,7 +109,6 @@ public class PostCustomerTests
     public async Task PostCustomer_WhenMalformedJson_Returns400()
     {
         // Arrange
-
         var httpContent = new StringContent("{ Name: }", System.Text.Encoding.UTF8, "application/json");
 
         // Act
@@ -117,6 +116,11 @@ public class PostCustomerTests
 
         // Assert
         Assert.That(responsePost.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
+        var content = await responsePost.Content.ReadAsStringAsync();
+        JsonSerializerOptions options = new() { PropertyNameCaseInsensitive = true };
+        var details = JsonSerializer.Deserialize<Microsoft.AspNetCore.Mvc.ProblemDetails>(content, options);
+        Assert.That(details, Is.Not.Null);
+        Assert.That(details.Extensions["errorCode"]?.ToString(), Is.EqualTo("INVALID_JSON"));
     }
 
     [Test]

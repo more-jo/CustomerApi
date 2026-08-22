@@ -15,7 +15,7 @@ public class ExceptionTests
   private TestContextManager _testContextManager;
 
   [SetUp]
-  public async Task Setup()
+  public void Setup()
   {
     _factory = new WebApplicationFactory<Program>();
     _client = _factory.CreateClient();

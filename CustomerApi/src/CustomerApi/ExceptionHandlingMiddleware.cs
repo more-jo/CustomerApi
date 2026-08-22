@@ -29,14 +29,21 @@ public class ExceptionHandlingMiddleware
       object? errorCode;
       string details = string.Empty;
 
-      if (ex is BadHttpRequestException || ex is JsonException)
+      if (ex is JsonException || ex is BadHttpRequestException { InnerException: JsonException })
+      {
+        statusCode = StatusCodes.Status400BadRequest;
+        title = "Bad request";
+        type = "https://tools.ietf.org/html/rfc7231#section-6.5.1";
+        errorCode = "INVALID_JSON";
+        details = "The request body is not valid JSON.";
+      }
+      else if (ex is BadHttpRequestException)
       {
         statusCode = StatusCodes.Status400BadRequest;
         title = "Bad request";
         type = "https://tools.ietf.org/html/rfc7231#section-6.5.1";
         errorCode = "BAD_REQUEST";
-
-        details = "The request body is not valid JSON";
+        details = "The request could not be processed.";
       }
       else
       {
@@ -44,7 +51,6 @@ public class ExceptionHandlingMiddleware
         title = "An error occurred while processing your request.";
         type = "https://tools.ietf.org/html/rfc7231#section-6.6.1";
         errorCode = "INTERNAL_ERROR";
-
         details = "An unexpected error occurred.";
       }
 
