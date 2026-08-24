@@ -9,15 +9,14 @@ public static class CustomerEndPoints
     app.MapGet(CUSTOMER_ROUTE, (ICustomerRepository repo) =>
     {
       List<Customer> customers = repo.GetAll();
-      // Constructor injection: ASP.NET matches the parameter type (ICustomerRepository)
-      // to the registered service and passes the instance here.
-      return customers;
+      var customerResponseList = customers.Select(c => CustomerResponse.From(c));
+      return customerResponseList;
     });
 
     app.MapGet(CUSTOMER_ROUTE + "/{id:int}", (int id, ICustomerRepository repo) =>
     {
       var customer = repo.GetCustomerById(id);
-      return customer is not null ? Results.Ok(customer) : Results.NotFound();
+      return customer is not null ? Results.Ok(CustomerResponse.From(customer)) : Results.NotFound();
     });
 
     app.MapPost(CUSTOMER_ROUTE, (CreateCustomerRequest newCustomer, ICustomerRepository repo) =>
