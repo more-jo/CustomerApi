@@ -1,3 +1,3 @@
 namespace CustomerApi;
 
-public record UpdateCustomerRequest(string Name) : CustomerName(Name);
+public record UpdateCustomerRequest(string Name) : ICustomer;

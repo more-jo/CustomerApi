@@ -1,7 +1,7 @@
 
 namespace CustomerApi;
 
-public class CustomerRequestValidator
+public static class CustomerRequestValidator
 {
   public static IResult? ValidateCustomerName(string? name)
   {
@@ -21,7 +21,7 @@ public class CustomerRequestValidator
     return null;
   }
 
-  public static IResult? ValidateCustomerName(CustomerName? customer)
+  public static IResult? ValidateCustomerName(ICustomer? customer)
   {
     if (customer is null)
     {
