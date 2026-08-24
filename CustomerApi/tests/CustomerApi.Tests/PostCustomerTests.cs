@@ -45,7 +45,7 @@ public class PostCustomerTests
         Assert.That(response.Headers.Location, Is.Not.Null);
         string responseJson = await response.Content.ReadAsStringAsync();
         JsonSerializerOptions options = new() { PropertyNameCaseInsensitive = true };
-        var createdCustomer = JsonSerializer.Deserialize<Customer>(responseJson, options);
+        var createdCustomer = JsonSerializer.Deserialize<CustomerResponse>(responseJson, options);
         Assert.That(createdCustomer, Is.Not.Null);
         Assert.That(createdCustomer.Name, Is.EqualTo("Charlie"));
     }
@@ -72,7 +72,7 @@ public class PostCustomerTests
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
         Assert.That(responseGet.StatusCode, Is.EqualTo(HttpStatusCode.OK));
 
-        var customers = JsonSerializer.Deserialize<List<Customer>>(content, options);
+        var customers = JsonSerializer.Deserialize<List<CustomerResponse>>(content, options);
         Assert.That(customers, Is.Not.Null);
         Assert.That(customers.Count, Is.EqualTo(3));
         Assert.That(customers[2].Name, Is.EqualTo("Charlie"));

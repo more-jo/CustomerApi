@@ -48,7 +48,7 @@ public class PutCustomerTests
         Assert.That(responseGet.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         var responseString = await responseGet.Content.ReadAsStringAsync();
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-        var customer = JsonSerializer.Deserialize<Customer>(responseString, options);
+        var customer = JsonSerializer.Deserialize<CustomerResponse>(responseString, options);
         Assert.That(customer, Is.Not.Null);
         Assert.That(customer.Id, Is.EqualTo(customer1.Id));
         Assert.That(customer.Name, Is.EqualTo(expectation));
@@ -74,7 +74,7 @@ public class PutCustomerTests
         Assert.That(responseGet.StatusCode, Is.EqualTo(HttpStatusCode.OK));
         var responseString = await responseGet.Content.ReadAsStringAsync();
         var option = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-        var customer = JsonSerializer.Deserialize<Customer>(responseString, option);
+        var customer = JsonSerializer.Deserialize<CustomerResponse>(responseString, option);
         Assert.That(customer, Is.Not.Null);
         Assert.That(customer.Id, Is.EqualTo(customer1.Id));
         Assert.That(customer.Name, Is.EqualTo(updatedValue.Name));

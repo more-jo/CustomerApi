@@ -56,10 +56,10 @@ public class DeleteCustomerTests
         });
     }
 
-    private async Task<Customer?> GetCustomerFromContent(HttpContent content)
+    private async Task<CustomerResponse?> GetCustomerFromContent(HttpContent content)
     {
         var responseString = await content.ReadAsStringAsync();
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-        return JsonSerializer.Deserialize<Customer>(responseString, options);
+        return JsonSerializer.Deserialize<CustomerResponse>(responseString, options);
     }
 }

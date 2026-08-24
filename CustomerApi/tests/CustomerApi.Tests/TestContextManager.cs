@@ -7,7 +7,7 @@ using System.Text.Json;
 
 public class TestContextManager
 {
-  public async Task<Customer> CreateCustomerAsync(HttpClient client, string name)
+  public async Task<CustomerResponse> CreateCustomerAsync(HttpClient client, string name)
   {
     var newCustomer = new { Name = name };
     var responsePost = await client.PostAsJsonAsync("/customers/", newCustomer);
@@ -19,11 +19,11 @@ public class TestContextManager
     return responseCustomer;
   }
 
-  private async Task<Customer?> GetCustomerFromResponse(HttpResponseMessage response)
+  private async Task<CustomerResponse?> GetCustomerFromResponse(HttpResponseMessage response)
   {
     string responseJson = await response.Content.ReadAsStringAsync();
     JsonSerializerOptions options = new() { PropertyNameCaseInsensitive = true };
-    var customer = JsonSerializer.Deserialize<Customer>(responseJson, options);
+    var customer = JsonSerializer.Deserialize<CustomerResponse>(responseJson, options);
     return customer;
   }
 

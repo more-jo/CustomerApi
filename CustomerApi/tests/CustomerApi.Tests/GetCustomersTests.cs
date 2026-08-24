@@ -44,7 +44,7 @@ public class GetCustomersTests
         var content = await response.Content.ReadAsStringAsync();
         // asp.net deserializes usually with camelCase, but Customer is PascalCase. Therefore options:
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-        var customers = JsonSerializer.Deserialize<List<Customer>>(content, options);
+        var customers = JsonSerializer.Deserialize<List<CustomerResponse>>(content, options);
         Assert.That(customers, Is.Not.Null);
         Assert.That(customers.Count, Is.EqualTo(2));
         Assert.That(customers[0].Name, Is.EqualTo("Alice"));
@@ -67,7 +67,7 @@ public class GetCustomersTests
 
         var responseString = await response.Content.ReadAsStringAsync();
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-        var customer = JsonSerializer.Deserialize<Customer>(responseString, options);
+        var customer = JsonSerializer.Deserialize<CustomerResponse>(responseString, options);
         Assert.That(customer, Is.Not.Null);
         Assert.That(customer.Name, Is.EqualTo("Alice"));
     }
@@ -124,7 +124,7 @@ public class GetCustomersTests
 
         var content = await response.Content.ReadAsStringAsync();
         var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-        var customers = JsonSerializer.Deserialize<List<Customer>>(content, options);
+        var customers = JsonSerializer.Deserialize<List<CustomerResponse>>(content, options);
         Assert.That(customers, Is.Not.Null);
 
         var deletedCustomer2 = customers.FirstOrDefault(c => c.Name == newCustomerName2);
