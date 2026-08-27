@@ -9,15 +9,15 @@ public static class OrderEndpoints
     app.MapGet(ORDERS_ROUTE, (int customerId, IOrderRepository repo) =>
     {
       List<Order> orders = repo.GetOrderByCustomerId(customerId);
-
-      return orders;
+      var orderResponses = orders.Select(o => OrderResponse.From(o));
+      return orderResponses;
     });
 
     app.MapGet(ORDERS_ROUTE + "/{id:int}", (int id, IOrderRepository repo) =>
     {
       var order = repo.GetOrderByOrderId(id);
 
-      return order is not null ? Results.Ok(order) : Results.NotFound();
+      return order is not null ? Results.Ok(OrderResponse.From(order)) : Results.NotFound();
     });
 
     app.MapPost(ORDERS_ROUTE, (CreateOrderRequest request, IOrderRepository orderRepo, ICustomerRepository customerRepo) =>
