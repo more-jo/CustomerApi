@@ -97,7 +97,7 @@ public class PatchCustomerTests
         const int NON_EXISTING_CUSTOMER_ID = 999;
 
         // Act
-        var httpContent = new CustomerPatchRequest(NON_EXISTING_CUSTOMER_ID, "absent customer", false);
+        var httpContent = new PatchCustomerRequest(NON_EXISTING_CUSTOMER_ID, "absent customer", false);
         var response = await _client.PatchAsJsonAsync($"/customers/{NON_EXISTING_CUSTOMER_ID}", httpContent);
 
         // Assert

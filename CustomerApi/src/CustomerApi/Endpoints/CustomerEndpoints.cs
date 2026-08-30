@@ -60,7 +60,7 @@ public static class CustomerEndPoints
       return Results.NotFound();
     });
 
-    app.MapPatch(CUSTOMER_ROUTE + "/{id:int}", (int id, CustomerPatchRequest patchRequest, ICustomerRepository repo) =>
+    app.MapPatch(CUSTOMER_ROUTE + "/{id:int}", (int id, PatchCustomerRequest patchRequest, ICustomerRepository repo) =>
     {
       var c = repo.GetCustomerById(id);
       if (c is null)
