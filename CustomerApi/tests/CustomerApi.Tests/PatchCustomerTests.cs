@@ -89,4 +89,18 @@ public class PatchCustomerTests
         Assert.That(customerAfterPatch.IsDeleted, Is.EqualTo(EXPECTED_DELETED_STATE));
         Assert.That(customerAfterPatch.Name, Is.EqualTo(EXPECTED_NAME));
     }
+
+    [Test]
+    public async Task PatchCustomer_AbsentCustomer_Returns404()
+    {
+        // Arrange
+        const int NON_EXISTING_CUSTOMER_ID = 999;
+
+        // Act
+        var httpContent = new CustomerPatchRequest(NON_EXISTING_CUSTOMER_ID, "absent customer", false);
+        var response = await _client.PatchAsJsonAsync($"/customers/{NON_EXISTING_CUSTOMER_ID}", httpContent);
+
+        // Assert
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+    }
 }
