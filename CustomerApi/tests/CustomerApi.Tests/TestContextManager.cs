@@ -19,7 +19,7 @@ public class TestContextManager
     return responseCustomer;
   }
 
-  private async Task<CustomerResponse?> GetCustomerFromResponse(HttpResponseMessage response)
+  public async Task<CustomerResponse?> GetCustomerFromResponse(HttpResponseMessage response)
   {
     string responseJson = await response.Content.ReadAsStringAsync();
     JsonSerializerOptions options = new() { PropertyNameCaseInsensitive = true };

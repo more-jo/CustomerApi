@@ -94,7 +94,7 @@ public class ExceptionTests
   public void ValidateCreateCustomerRequest_ReturnsNull()
   {
     // Arrange 
-    var c = new CreateCustomerRequest("test");
+    var c = new CreateCustomerRequest(1, "test");
 
     // Act
     var response = CustomerRequestValidator.ValidateCustomerName(c);
@@ -107,7 +107,7 @@ public class ExceptionTests
   public void ValidateUpdateCustomerRequest_ReturnsNull()
   {
     // Arrange 
-    var c = new UpdateCustomerRequest("test");
+    var c = new UpdateCustomerRequest(1, "test");
 
     // Act
     var response = CustomerRequestValidator.ValidateCustomerName(c);
@@ -136,7 +136,7 @@ public class ExceptionTests
   public void ValidateCustomerNameUpdate_EmptyName_ReturnsProblem()
   {
     // Arrange    
-    UpdateCustomerRequest update = new UpdateCustomerRequest("");
+    UpdateCustomerRequest update = new UpdateCustomerRequest(1, "");
 
     // Act
     var responseUpdate = CustomerRequestValidator.ValidateCustomerName(update);
@@ -157,7 +157,7 @@ public class ExceptionTests
   public void ValidateCustomerNameRequest_EmptyName_ReturnsProblem()
   {
     // Arrange
-    CreateCustomerRequest request = new CreateCustomerRequest("");
+    CreateCustomerRequest request = new CreateCustomerRequest(1, "");
 
     // Act
     var responseRequest = CustomerRequestValidator.ValidateCustomerName(request);

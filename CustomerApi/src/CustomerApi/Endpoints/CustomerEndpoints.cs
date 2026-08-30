@@ -59,5 +59,38 @@ public static class CustomerEndPoints
 
       return Results.NotFound();
     });
+
+    app.MapPatch(CUSTOMER_ROUTE + "/{id:int}", (int id, CustomerPatchRequest patchRequest, ICustomerRepository repo) =>
+    {
+      var c = repo.GetCustomerById(id);
+      if (c is null)
+      {
+        return Results.NotFound();
+      }
+
+      Customer patchedCustomer = new Customer(c.Id, "");
+      if (!string.IsNullOrEmpty(patchRequest.Name))
+      {
+        var validationResult = CustomerRequestValidator.ValidateCustomerName(patchRequest);
+        if (validationResult is not null)
+        {
+          return validationResult;
+        }
+        patchedCustomer = new Customer(c.Id, patchRequest.Name);
+      }
+
+      if (patchRequest.IsDeleted.HasValue)
+      {
+        patchedCustomer = patchedCustomer with { IsDeleted = patchRequest.IsDeleted.Value };
+      }
+
+      var checkResult = repo.Patch(patchedCustomer);
+      if (checkResult.IsSuccess)
+      {
+        return Results.NoContent();
+      }
+
+      return Results.NotFound();
+    });
   }
 }

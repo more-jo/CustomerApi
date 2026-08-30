@@ -47,19 +47,12 @@ public class DeleteCustomerTests
 
         // assert
         var responseGetAfter = await _client.GetAsync($"/customers/{customerBeforeDeletion.Id}");
-        var customerAfterDeletion = await GetCustomerFromContent(responseGetAfter.Content);
+        var customerAfterDeletion = await _testContextManager.GetCustomerFromResponse(responseGetAfter);
         Assert.That(customerAfterDeletion, Is.Not.Null);
         Assert.Multiple(() =>
         {
             Assert.That(responseDelete.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
             Assert.That(customerAfterDeletion.IsDeleted, Is.True);
         });
-    }
-
-    private async Task<CustomerResponse?> GetCustomerFromContent(HttpContent content)
-    {
-        var responseString = await content.ReadAsStringAsync();
-        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-        return JsonSerializer.Deserialize<CustomerResponse>(responseString, options);
     }
 }

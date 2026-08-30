@@ -36,4 +36,6 @@ public interface ICustomerRepository
     /// False if absent.
     /// </summary>
     bool Delete(int id);
+
+    Result Patch(Customer customer);
 }

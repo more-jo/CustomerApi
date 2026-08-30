@@ -71,4 +71,21 @@ public class EfCoreCustomerRepository : ICustomerRepository
 
         return ERROR;
     }
+
+    public Result Patch(Customer patchedCustomer)
+    {
+        var customer = _dbContext.Customers.Find(patchedCustomer.Id);
+
+        if (customer is null)
+        {
+            return Errors.AccountNotFound;
+        }
+
+        _dbContext.Customers.Entry(customer).State = EntityState.Detached;
+        _dbContext.Customers.Update(patchedCustomer);
+
+        _dbContext.SaveChanges();
+
+        return Result.Success();
+    }
 }
