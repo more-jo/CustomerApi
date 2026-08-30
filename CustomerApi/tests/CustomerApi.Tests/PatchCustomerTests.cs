@@ -60,4 +60,33 @@ public class PatchCustomerTests
         Assert.That(customerAfterPatch, Is.Not.Null);
         Assert.That(customerAfterPatch.IsDeleted, Is.False);
     }
+
+    [Test]
+    public async Task PatchCustomer_ChangeCustomerName_Returns204()
+    {
+        // Arrange
+        var newCustomer = await _testContextManager.CreateCustomerAsync(_client, "Alice");
+        Assume.That(newCustomer, Is.Not.Null);
+
+        var newCustomerGetResponse = await _client.GetAsync($"/customers/{newCustomer.Id}");
+        var customerGet = await _testContextManager.GetCustomerFromResponse(newCustomerGetResponse);
+        Assume.That(customerGet, Is.Not.Null);
+        Assume.That(customerGet.Name, Is.EqualTo(newCustomer.Name));
+        const bool EXPECTED_DELETED_STATE = false;
+        Assume.That(customerGet.IsDeleted, Is.EqualTo(EXPECTED_DELETED_STATE));
+
+        // Act
+        const string EXPECTED_NAME = "newName";
+        var httpContent = customerGet with { Name = EXPECTED_NAME };
+        var response = await _client.PatchAsJsonAsync($"/customers/{newCustomer.Id}", httpContent);
+
+        // Assert
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+
+        var customerAfterPatchResponse = await _client.GetAsync($"/customers/{newCustomer.Id}");
+        var customerAfterPatch = await _testContextManager.GetCustomerFromResponse(customerAfterPatchResponse);
+        Assert.That(customerAfterPatch, Is.Not.Null);
+        Assert.That(customerAfterPatch.IsDeleted, Is.EqualTo(EXPECTED_DELETED_STATE));
+        Assert.That(customerAfterPatch.Name, Is.EqualTo(EXPECTED_NAME));
+    }
 }
