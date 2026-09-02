@@ -41,7 +41,7 @@ public class GetOrderTests
 
     var content = await response.Content.ReadAsStringAsync();
     var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-    var orders = JsonSerializer.Deserialize<List<Order>>(content, options);
+    var orders = JsonSerializer.Deserialize<List<OrderResponse>>(content, options);
     Assert.That(orders, Is.Empty);
   }
 
@@ -63,7 +63,7 @@ public class GetOrderTests
     Assert.That(responseGetOrder.StatusCode, Is.EqualTo(HttpStatusCode.OK));
     var content = await responseGetOrder.Content.ReadAsStringAsync();
     var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-    var responseOrders = JsonSerializer.Deserialize<List<Order>>(content, options);
+    var responseOrders = JsonSerializer.Deserialize<List<OrderResponse>>(content, options);
     Assert.That(responseOrders, Is.Not.Null);
     Assert.That(responseOrders.Where(o => o.Amount == 1 && o.CustomerId == expectedOrder.CustomerId).Count, Is.EqualTo(1));
   }

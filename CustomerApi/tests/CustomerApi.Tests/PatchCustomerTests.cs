@@ -1,8 +1,6 @@
 ﻿using System.Net;
 using Microsoft.AspNetCore.Mvc.Testing;
-using System.Text.Json;
 using System.Net.Http.Json;
-using Microsoft.AspNetCore.Http;
 
 namespace CustomerApi.Tests;
 
@@ -49,7 +47,7 @@ public class PatchCustomerTests
         Assume.That(deletedCustomer.IsDeleted, Is.True);
 
         // Act
-        var httpContent = deletedCustomer with { IsDeleted = false };
+        var httpContent = new PatchCustomerRequest(deletedCustomer.Name, false);
         var response = await _client.PatchAsJsonAsync($"/customers/{newCustomer.Id}", httpContent);
 
         // Assert
@@ -77,7 +75,7 @@ public class PatchCustomerTests
 
         // Act
         const string EXPECTED_NAME = "newName";
-        var httpContent = customerGet with { Name = EXPECTED_NAME };
+        var httpContent = new PatchCustomerRequest(EXPECTED_NAME, false);
         var response = await _client.PatchAsJsonAsync($"/customers/{newCustomer.Id}", httpContent);
 
         // Assert
@@ -97,10 +95,40 @@ public class PatchCustomerTests
         const int NON_EXISTING_CUSTOMER_ID = 999;
 
         // Act
-        var httpContent = new PatchCustomerRequest(NON_EXISTING_CUSTOMER_ID, "absent customer", false);
+        var httpContent = new PatchCustomerRequest("absent customer", false);
         var response = await _client.PatchAsJsonAsync($"/customers/{NON_EXISTING_CUSTOMER_ID}", httpContent);
 
         // Assert
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NotFound));
+    }
+
+    [Test]
+    public async Task PatchCustomer_NameOnly_LeavesIsDeletedUnchanged()
+    {
+        // Arrange
+        var newCustomer = await _testContextManager.CreateCustomerAsync(_client, "Alice");
+
+        var newCustomerGetResponse = await _client.GetAsync($"/customers/{newCustomer.Id}");
+        var customerGet = await _testContextManager.GetCustomerFromResponse(newCustomerGetResponse);
+        Assume.That(customerGet, Is.Not.Null);
+        Assume.That(customerGet.Name, Is.EqualTo(newCustomer.Name));
+        const bool EXPECTED_DELETED_STATE_AFTER_CREATION = false;
+        Assume.That(customerGet.IsDeleted, Is.EqualTo(EXPECTED_DELETED_STATE_AFTER_CREATION));
+
+        var deleteResponse = await _client.DeleteAsync($"/customers/{newCustomer.Id}");
+        Assume.That(deleteResponse.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+
+        // Act
+        var body = new PatchCustomerRequest("Renamed", null); // only name; IsDeleted = null
+        var response = await _client.PatchAsJsonAsync($"/customers/{newCustomer.Id}", body);
+
+        // Assert
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.NoContent));
+
+        var getResponse = await _client.GetAsync($"/customers/{newCustomer.Id}");
+        var after = await _testContextManager.GetCustomerFromResponse(getResponse);
+        Assert.That(after, Is.Not.Null);
+        Assert.That(after.Name, Is.EqualTo("Renamed"));
+        Assert.That(after.IsDeleted, Is.True);
     }
 }

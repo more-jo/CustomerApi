@@ -44,7 +44,7 @@ public class PostOrderTests
 
     var content = await responseOrderPost.Content.ReadAsStringAsync();
     var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-    var responseOrder = JsonSerializer.Deserialize<Order>(content, options);
+    var responseOrder = JsonSerializer.Deserialize<OrderResponse>(content, options);
     Assert.That(responseOrder, Is.Not.Null);
 
     Assert.That(responseOrderPost.Headers.Location?.ToString(), Is.EqualTo($"/orders/{responseOrder.Id}"));

@@ -21,7 +21,7 @@ public static class CustomerRequestValidator
     return null;
   }
 
-  public static IResult? ValidateCustomerName(ICustomer? customer)
+  public static IResult? ValidateCustomerName(IHasCustomerName? customer)
   {
     if (customer is null)
     {

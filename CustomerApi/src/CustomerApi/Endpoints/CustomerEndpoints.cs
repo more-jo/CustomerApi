@@ -62,21 +62,21 @@ public static class CustomerEndPoints
 
     app.MapPatch(CUSTOMER_ROUTE + "/{id:int}", (int id, PatchCustomerRequest patchRequest, ICustomerRepository repo) =>
     {
-      var c = repo.GetCustomerById(id);
-      if (c is null)
+      var foundCustomer = repo.GetCustomerById(id);
+      if (foundCustomer is null)
       {
         return Results.NotFound();
       }
 
-      Customer patchedCustomer = new Customer(c.Id, "");
+      Customer patchedCustomer = foundCustomer;
       if (!string.IsNullOrEmpty(patchRequest.Name))
       {
-        var validationResult = CustomerRequestValidator.ValidateCustomerName(patchRequest);
+        var validationResult = CustomerRequestValidator.ValidateCustomerName(patchRequest.Name);
         if (validationResult is not null)
         {
           return validationResult;
         }
-        patchedCustomer = new Customer(c.Id, patchRequest.Name);
+        patchedCustomer = foundCustomer with { Name = patchRequest.Name };
       }
 
       if (patchRequest.IsDeleted.HasValue)

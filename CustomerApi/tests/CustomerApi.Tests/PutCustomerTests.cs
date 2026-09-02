@@ -99,11 +99,11 @@ public class PutCustomerTests
     public async Task PutCustomer_WhenMalformedJson_ReturnsBadRequest()
     {
         // Arrange
-        await _testContextManager.CreateCustomerAsync(_client, "Alice");
+        var customer1 = await _testContextManager.CreateCustomerAsync(_client, "Alice");
         var httpContent = new StringContent("{ Name: }", System.Text.Encoding.UTF8, "application/json");
 
         // Act 
-        var response = await _client.PutAsync("/customers/1", httpContent);
+        var response = await _client.PutAsync($"/customers/{customer1.Id}", httpContent);
 
         // Assert
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.BadRequest));
@@ -113,11 +113,11 @@ public class PutCustomerTests
     public async Task PutCustomer_WhenNameIsMissing_ReturnsUnprocessableEntity()
     {
         // Arrange
-        await _testContextManager.CreateCustomerAsync(_client, "Alice");
+        var customer1 = await _testContextManager.CreateCustomerAsync(_client, "Alice");
         var httpContent = new StringContent("{ }", System.Text.Encoding.UTF8, "application/json");
 
         // Act 
-        var response = await _client.PutAsync("/customers/1", httpContent);
+        var response = await _client.PutAsync($"/customers/{customer1.Id}", httpContent);
 
         // Assert
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.UnprocessableEntity));
@@ -127,11 +127,11 @@ public class PutCustomerTests
     public async Task PutCustomer_WhenNameIsMissing_Returns422WithProblemDetails()
     {
         // Arrange
-        await _testContextManager.CreateCustomerAsync(_client, "Alice");
+        var customer1 = await _testContextManager.CreateCustomerAsync(_client, "Alice");
         var httpContent = new StringContent("{ }", System.Text.Encoding.UTF8, "application/json");
 
         // Act 
-        var response = await _client.PutAsync("/customers/1", httpContent);
+        var response = await _client.PutAsync($"/customers/{customer1.Id}", httpContent);
 
         // Assert
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.UnprocessableEntity));
@@ -153,12 +153,14 @@ public class PutCustomerTests
     public async Task PutCustomer_WhenNameIsEmpty_ReturnsUnprocessableEntity()
     {
         // Arrange
+        var customer1 = await _testContextManager.CreateCustomerAsync(_client, "Alice");
+
         var updatedValue = new { Name = string.Empty };
         var jsonValue = JsonSerializer.Serialize(updatedValue);
         var httpContent = new StringContent(jsonValue, System.Text.Encoding.UTF8, "application/json");
 
         // Act 
-        var response = await _client.PutAsync("/customers/1", httpContent);
+        var response = await _client.PutAsync($"/customers/{customer1.Id}", httpContent);
 
         // Assert
         Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.UnprocessableEntity));

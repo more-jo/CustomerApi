@@ -8,7 +8,7 @@ namespace CustomerApi.Tests;
 public class DeleteCustomerTests
 {
     private WebApplicationFactory<Program> _factory = null!;
-    private System.Net.Http.HttpClient _client;
+    private System.Net.Http.HttpClient _client = null!;
     private TestContextManager _testContextManager;
 
     [SetUp]

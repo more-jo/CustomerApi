@@ -1,3 +1,3 @@
 namespace CustomerApi;
 
-public record PatchCustomerRequest(int Id, string? Name, bool? IsDeleted) : ICustomer;
+public record PatchCustomerRequest(string? Name, bool? IsDeleted);

@@ -1,7 +1,6 @@
 namespace CustomerApi;
 
-public interface ICustomer
+public interface IHasCustomerName
 {
-  int Id { get; }
   string Name { get; }
 }

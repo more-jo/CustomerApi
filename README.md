@@ -44,7 +44,8 @@ dotnet test
 | Missing `CustomerId` on `POST /orders` returns 404 | The request itself is valid, but the referenced customer does not exist. Therefore, 404 is more appropriate than 422. |
 | Cross-entity validation is done in the handler | The repository is responsible for data access. Checking whether a customer exists before creating an order is part of the application logic. |
 | `IOrderRepository` has its own interface | Keeping the interfaces separate avoids creating one large repository interface as the application grows. |
-| Missing `CustomerId` on `PATCH /orders` returns 404 | The request itself is valid, but the referenced customer does not exist. |
+| Missing `CustomerId` on `PATCH /customers` returns 404 | The request itself is valid, but the referenced customer does not exist. |
+| `PATCH /customers` changes leave other parts untouched | Customer might be restored in the future. |
 
 ## Other decisions
 
@@ -57,7 +58,7 @@ dotnet test
 
 ## In Progress
 
-- **Response DTOs** — `CustomerResponse` already exists, but the API does not use it yet. The handlers currently return the entities directly. This means that adding a new public property to an entity could unintentionally change the API response.
+- **Response DTOs** — The handlers currently return the entities directly. This means that adding a new public property to an entity could unintentionally change the API response.
 
 - **No authentication** — Authentication is intentionally out of scope for this iteration.
 
