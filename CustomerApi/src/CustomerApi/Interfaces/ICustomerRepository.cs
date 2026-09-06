@@ -37,5 +37,5 @@ public interface ICustomerRepository
     /// </summary>
     bool Delete(int id);
 
-    Result Patch(Customer customer);
+    bool Patch(Customer customer);
 }

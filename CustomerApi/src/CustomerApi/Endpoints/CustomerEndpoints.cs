@@ -31,7 +31,7 @@ public static class CustomerEndPoints
       var customer = new Customer(newId, newCustomer.Name);
       repo.Add(customer);
 
-      return Results.Created($"{CUSTOMER_ROUTE}/{customer.Id}", customer);
+      return Results.Created($"{CUSTOMER_ROUTE}/{customer.Id}", CustomerResponse.From(customer));
     });
 
     app.MapPut(CUSTOMER_ROUTE + "/{id:int}", (int id, UpdateCustomerRequest newCustomer, ICustomerRepository repo) =>
@@ -69,7 +69,7 @@ public static class CustomerEndPoints
       }
 
       Customer patchedCustomer = foundCustomer;
-      if (!string.IsNullOrEmpty(patchRequest.Name))
+      if (patchRequest.Name is not null)
       {
         var validationResult = CustomerRequestValidator.ValidateCustomerName(patchRequest.Name);
         if (validationResult is not null)
@@ -84,13 +84,13 @@ public static class CustomerEndPoints
         patchedCustomer = patchedCustomer with { IsDeleted = patchRequest.IsDeleted.Value };
       }
 
-      var checkResult = repo.Patch(patchedCustomer);
-      if (checkResult.IsSuccess)
+      var isPatched = repo.Patch(patchedCustomer);
+      if (isPatched)
       {
         return Results.NoContent();
       }
 
-      return Results.NotFound();
+      return Results.Problem(statusCode: 500);
     });
   }
 }

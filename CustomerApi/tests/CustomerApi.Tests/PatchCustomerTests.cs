@@ -47,7 +47,7 @@ public class PatchCustomerTests
         Assume.That(deletedCustomer.IsDeleted, Is.True);
 
         // Act
-        var httpContent = new PatchCustomerRequest(deletedCustomer.Name, false);
+        var httpContent = new PatchCustomerRequest(null, false);
         var response = await _client.PatchAsJsonAsync($"/customers/{newCustomer.Id}", httpContent);
 
         // Assert
@@ -75,7 +75,7 @@ public class PatchCustomerTests
 
         // Act
         const string EXPECTED_NAME = "newName";
-        var httpContent = new PatchCustomerRequest(EXPECTED_NAME, false);
+        var httpContent = new PatchCustomerRequest(EXPECTED_NAME, null);
         var response = await _client.PatchAsJsonAsync($"/customers/{newCustomer.Id}", httpContent);
 
         // Assert
@@ -130,5 +130,25 @@ public class PatchCustomerTests
         Assert.That(after, Is.Not.Null);
         Assert.That(after.Name, Is.EqualTo("Renamed"));
         Assert.That(after.IsDeleted, Is.True);
+    }
+
+    [Test]
+    public async Task PatchCustomer_Emptyname_Returns404()
+    {
+        // Arrange
+        var newCustomer = await _testContextManager.CreateCustomerAsync(_client, "Alice");
+
+        var newCustomerGetResponse = await _client.GetAsync($"/customers/{newCustomer.Id}");
+        var customerGet = await _testContextManager.GetCustomerFromResponse(newCustomerGetResponse);
+        Assume.That(customerGet, Is.Not.Null);
+
+        // Act
+        var emptyName = "";
+        bool? isDeleted = null;
+        var body = new PatchCustomerRequest(emptyName, isDeleted);
+        var response = await _client.PatchAsJsonAsync($"/customers/{newCustomer.Id}", body);
+
+        // Assert
+        Assert.That(response.StatusCode, Is.EqualTo(HttpStatusCode.UnprocessableContent));
     }
 }

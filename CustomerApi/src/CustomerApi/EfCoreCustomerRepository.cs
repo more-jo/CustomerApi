@@ -72,13 +72,13 @@ public class EfCoreCustomerRepository : ICustomerRepository
         return ERROR;
     }
 
-    public Result Patch(Customer patchedCustomer)
+    public bool Patch(Customer patchedCustomer)
     {
         var customer = _dbContext.Customers.Find(patchedCustomer.Id);
 
         if (customer is null)
         {
-            return Errors.AccountNotFound;
+            return ERROR;
         }
 
         _dbContext.Customers.Entry(customer).State = EntityState.Detached;
@@ -86,6 +86,6 @@ public class EfCoreCustomerRepository : ICustomerRepository
 
         _dbContext.SaveChanges();
 
-        return Result.Success();
+        return SUCCESS;
     }
 }
