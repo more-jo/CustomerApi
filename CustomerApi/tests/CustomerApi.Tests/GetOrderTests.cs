@@ -8,8 +8,8 @@ namespace CustomerApi.Tests;
 public class GetOrderTests
 {
   private WebApplicationFactory<Program> _factory = null!;
-  private System.Net.Http.HttpClient _client;
-  private TestContextManager _testContextManager;
+  private System.Net.Http.HttpClient _client = null!;
+  private TestContextManager _testContextManager = null!;
 
   [SetUp]
   public void Setup()

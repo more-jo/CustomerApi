@@ -9,7 +9,7 @@ public class PutCustomerTests
 {
     private WebApplicationFactory<Program> _factory = null!;
     private HttpClient _client = null!;
-    private TestContextManager _testContextManager;
+    private TestContextManager _testContextManager = null!;
 
     [SetUp]
     public void Setup()
