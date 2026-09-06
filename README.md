@@ -25,7 +25,7 @@ dotnet test
 | `POST /customers` | Creates a customer and returns 201 with a location header; returns 422 if the name is missing or empty |
 | `PUT /customers/{id}` | Updates a customer; returns 204 on success and 404 if the customer does not exist; returns 422 if the name is missing or empty |
 | `DELETE /customers/{id}` | Soft-deletes a customer by setting `IsDeleted = true`; returns 404 if the customer does not exist |
-| `PATCH /customers/{id}` | Patches the customer; Touches only the mentioned Properties; returns 404 if the customer does not exist |
+| `PATCH /customers/{id}` | Patches the customer; Touches only the mentioned properties; returns 404 if the customer does not exist. Returns 422 for empty name. |
 | `GET /orders?customerId={id}` | Returns the orders for a customer, including soft-deleted orders |
 | `GET /orders/{id}` | Returns an order or 404 if it does not exist. Returns 200 also for soft-deleted. |
 | `POST /orders` | Creates an order and returns 201 with a location header; returns 404 if the referenced customer does not exist |
@@ -36,6 +36,7 @@ dotnet test
 | Decision | Rationale |
 |---|---|
 | Flat route `/orders?customerId=` instead of `/customers/{id}/orders` | I chose this because it keeps the order endpoints independent from the customer endpoints. It also makes it easier to add other ways of querying orders later. |
+| Make the order not part of the customer | It's its own object because of SRP. Also, it is more difficult to traverse a predefined hierarchy /customers/id/order. |
 | Separate endpoints for `/orders/{id}` and `/orders?customerId=` | Query parameters are not part of ASP.NET Core routing. Using the same route for both cases would therefore cause a conflict. |
 | Soft delete instead of permanently deleting customers | A deleted customer is considered inactive rather than completely gone. This means the customer can potentially be reactivated later. |
 | `GET /customers/{id}` still returns deleted customers | The API should be able to distinguish between a customer that was deleted and a customer that never existed. |
@@ -46,7 +47,8 @@ dotnet test
 | Cross-entity validation is done in the handler | The repository is responsible for data access. Checking whether a customer exists before creating an order is part of the application logic. |
 | `IOrderRepository` has its own interface | Keeping the interfaces separate avoids creating one large repository interface as the application grows. |
 | Missing `Customer` on `PATCH /customers` returns 404 | The request itself is valid, but the referenced customer does not exist. |
-| `PATCH /customers` instead of `POST /customers/{id}/restore` | `POST` introduces a new verb. A changed property leave other parts untouched with nullability. |
+| `PATCH /customers` instead of `POST /customers/{id}/restore` | `RESTORE` would introduce a new verb. |
+| Nullable PatchCustomerRequest | Without bool? every PATCH would silently reactivate the deleted property |
 
 ## Other decisions
 
@@ -56,12 +58,15 @@ dotnet test
 | Generic `ProblemDetails.Detail` for 5xx errors with a `traceId` in `Extensions` | Returning `ex.Message` could expose internal information such as connection strings, file paths or table names. Instead, the exception is logged together with the request's trace ID. The client only receives the trace ID, which still makes it possible to find the corresponding error in the logs. For 4xx errors, a more specific message is returned because these errors are caused by the client's request. |
 | `LogError` is used for 5xx errors and `LogWarning` for 4xx errors | Client errors should not fill the logs with error-level entries. Otherwise, a large number of invalid requests could make actual server-side problems harder to spot. |
 | `/throw` is only registered in development | The endpoint is only there to trigger the exception middleware during testing. There is no reason to expose an endpoint whose only purpose is to throw an exception in production. |
-| `Customer` remeains a record with a mutable `IsDeleted` | Id and name are part of identity the other not. |
-| `?includeDeleted=` | Left out for simplification; Might be useful for larger data quantities. |
+| `Customer` remains a record with a mutable `IsDeleted` | Id and name are part of identity the IsDeleted does not represent identity. Tradeoff: It requires `with` copy and detaching the entity in EF Core. |
 
 ## In Progress
 
 - **No authentication** — Authentication is intentionally out of scope for this iteration.
+
+## Known limitations
+
+| `?includeDeleted=` | Left out for simplification; Might be useful for larger data quantities. |
 
 ## AI Assistance / Transparency
 

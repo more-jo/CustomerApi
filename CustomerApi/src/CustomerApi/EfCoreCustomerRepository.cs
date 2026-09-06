@@ -7,7 +7,7 @@ public class EfCoreCustomerRepository : ICustomerRepository
     private const bool SUCCESS = true;
     private const bool ERROR = false;
 
-    private CustomerDbContext _dbContext;
+    private readonly CustomerDbContext _dbContext;
 
     public EfCoreCustomerRepository(CustomerDbContext database)
     {

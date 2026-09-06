@@ -5,7 +5,7 @@ public class EfCoreOrderRepository : IOrderRepository
     private const bool SUCCESS = true;
     private const bool ERROR = false;
 
-    private CustomerDbContext _dbContext;
+    private readonly CustomerDbContext _dbContext;
 
     public EfCoreOrderRepository(CustomerDbContext database)
     {
