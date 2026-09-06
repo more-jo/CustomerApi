@@ -33,7 +33,7 @@ public static class OrderEndpoints
       var newOrder = new Order(orderId, request.CustomerId, request.Amount);
       orderRepo.Add(newOrder);
 
-      return Results.Created($"{ORDERS_ROUTE}/{newOrder.Id}", newOrder);
+      return Results.Created($"{ORDERS_ROUTE}/{newOrder.Id}", OrderResponse.From(newOrder));
     });
 
     app.MapDelete(ORDERS_ROUTE + "/{id:int}", (int id, IOrderRepository orderRepo) =>
