@@ -14,7 +14,7 @@ public partial class Program
         // scoped since it depends on CustomerDbContext which is scoped
         // earlier version used in memory singleton. That was replaced with per instance memory
         // that gives in the tests an isolated data store.
-        ConfigureDatabase(builder.Services);
+        ConfigureDatabase(builder.Services, builder.Configuration.GetConnectionString("CustomerDb"));
         builder.Services.AddScoped<ICustomerRepository, EfCoreCustomerRepository>();
         builder.Services.AddScoped<IOrderRepository, EfCoreOrderRepository>();
 
@@ -42,14 +42,9 @@ public partial class Program
         app.Run();
     }
 
-    private static void ConfigureDatabase(IServiceCollection services)
+    private static void ConfigureDatabase(IServiceCollection services, string connectionString)
     {
-        var dbCustomer = $"CustomerDb-{Guid.NewGuid()}";
-
-        // this only shows how to create the database - it does not create the database itself.
-        services.AddDbContext<CustomerDbContext>(options =>
-            options.UseInMemoryDatabase(dbCustomer)
-        );
+        services.AddDbContext<CustomerDbContext>(options => options.UseSqlServer(connectionString));
     }
 }
 

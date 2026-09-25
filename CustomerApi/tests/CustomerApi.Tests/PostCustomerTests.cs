@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using System.Text.Json;
 using System.Net.Http.Json;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace CustomerApi.Tests;
 
@@ -15,6 +16,12 @@ public class PostCustomerTests
     public void Setup()
     {
         _factory = new WebApplicationFactory<Program>();
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<CustomerDbContext>();
+            db.Database.EnsureDeleted();
+            db.Database.EnsureCreated();
+        }
         _client = _factory.CreateClient();
 
         _testContextManager = new TestContextManager();

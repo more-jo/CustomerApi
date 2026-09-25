@@ -3,6 +3,7 @@ namespace CustomerApi;
 public static class CustomerEndPoints
 {
   const string CUSTOMER_ROUTE = "/customers";
+  const int UNASSIGNED_ID = 0;
 
   public static void MapCustomerEndpoints(this WebApplication app)
   {
@@ -27,8 +28,7 @@ public static class CustomerEndPoints
         return validationResult;
       }
 
-      int newId = repo.GetMaxId() + 1;
-      var customer = new Customer(newId, newCustomer.Name);
+      var customer = new Customer(UNASSIGNED_ID, newCustomer.Name);
       repo.Add(customer);
 
       return Results.Created($"{CUSTOMER_ROUTE}/{customer.Id}", CustomerResponse.From(customer));
