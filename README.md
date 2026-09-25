@@ -72,6 +72,7 @@ dotnet test
 | Missing `Customer` on `PATCH /customers` returns 404 | The request itself is valid, but the referenced customer does not exist. |
 | `PATCH /customers` instead of `POST /customers/{id}/restore` | `RESTORE` would introduce a new verb. |
 | Nullable PatchCustomerRequest | Without bool? every PATCH would silently reactivate the deleted property |
+| UNASSIGNED_ID for the repositories | Since the ID is handled by the SQL this is not a magic number, but a consequence of the architecture. |
 
 ## Other decisions
 
