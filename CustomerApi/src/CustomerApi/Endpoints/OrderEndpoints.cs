@@ -3,6 +3,7 @@ namespace CustomerApi;
 public static class OrderEndpoints
 {
   const string ORDERS_ROUTE = "/orders";
+  const int UNASSIGNED_ID = 0;
 
   public static void MapOrderEndpoints(this WebApplication app)
   {
@@ -28,9 +29,7 @@ public static class OrderEndpoints
         return Results.NotFound();
       }
 
-      var maxId = orderRepo.GetMaxId();
-      var orderId = maxId + 1;
-      var newOrder = new Order(orderId, request.CustomerId, request.Amount);
+      var newOrder = new Order(UNASSIGNED_ID, request.CustomerId, request.Amount);
       orderRepo.Add(newOrder);
 
       return Results.Created($"{ORDERS_ROUTE}/{newOrder.Id}", OrderResponse.From(newOrder));

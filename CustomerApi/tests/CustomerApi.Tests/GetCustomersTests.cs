@@ -1,8 +1,7 @@
 ﻿using System.Net;
-using Microsoft.AspNetCore.Mvc.Testing;
 using System.Text.Json;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using System.Net.Http.Json;
 
 namespace CustomerApi.Tests;
 
@@ -16,6 +15,12 @@ public class GetCustomersTests
     public void Setup()
     {
         _factory = new WebApplicationFactory<Program>();
+        using (var scope = _factory.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<CustomerDbContext>();
+            db.Database.EnsureDeleted();
+            db.Database.EnsureCreated();
+        }
         _client = _factory.CreateClient();
 
         _testContextManager = new TestContextManager();
@@ -24,7 +29,7 @@ public class GetCustomersTests
     [TearDown]
     public async Task TearDown()
     {
-        _client.Dispose();
+        _client?.Dispose();
         await _factory.DisposeAsync();
     }
 
