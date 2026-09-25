@@ -2,12 +2,35 @@
 
 ASP.NET Core Minimal API for managing customers and orders.
 
-This project was created as a practice project to improve my understanding of clean code, TDD and API design. It uses Entity Framework Core with an in-memory database. The project also contains unit and integration tests using NUnit. All tests are currently passing.
+This project was created as a practice project to improve my understanding of clean code, TDD and API design. It uses Entity Framework Core with an SQL-database. The project also contains unit and integration tests using NUnit. All tests are currently passing.
 
 ## Prerequisites
 
 - .NET SDK installed
 - You can check the installed version with `dotnet --version`
+
+## Database
+
+### Docker Database Creation
+
+```bash
+docker run \
+  --name customerapi-sql \
+  -e "ACCEPT_EULA=Y" \
+  -e "MSSQL_SA_PASSWORD=differentPasswordThanIused" \
+  -p 1433:1433 \
+  -d \
+  mcr.microsoft.com/mssql/server:2022-latest
+```
+
+### Secret Handling
+
+`TrustServerCertificate=True` for development; db to uses self-signed - not applicable for production.
+
+```bash
+dotnet user-secrets init
+dotnet user-secrets set "ConnectionStrings:CustomerDb" 'Server=localhost,1433;Database=CustomerApi;User Id=sa;Password=differentPasswordThanIused;TrustServerCertificate=True'
+```
 
 ## Build and Test
 
