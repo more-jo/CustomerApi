@@ -27,8 +27,7 @@ public static class CustomerEndPoints
         return validationResult;
       }
 
-      int newId = repo.GetMaxId() + 1;
-      var customer = new Customer(newId, newCustomer.Name);
+      var customer = new Customer(0, newCustomer.Name);
       repo.Add(customer);
 
       return Results.Created($"{CUSTOMER_ROUTE}/{customer.Id}", CustomerResponse.From(customer));
